@@ -74,23 +74,6 @@ public class FileStemmer {
 	}
 
 	/**
-	 * Changes the string to only contian lowercase letters and spaces.
-	 * 
-	 * @param str the inputted string to be normalized
-	 * 
-	 * @return the normalized string
-	 */
-	public static String normalizeString(String str) {
-
-
-		
-
-		String r = Normalizer.normalize(str.toLowerCase(), Normalizer.Form.NFD);
-		
-		return r;
-	}
-
-	/**
 	 * Parses the line into cleaned and stemmed words and adds them to the provided
 	 * collection.
 	 *
@@ -103,7 +86,7 @@ public class FileStemmer {
 	 * @see Collection#add(Object)
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
-		for (String s : split(normalizeString(line))) {
+		for (String s : split(clean(line))) {
 			if (s != null && !s.equals("")) //removes empty string cases
 				stems.add((String) stemmer.stem(s));
 		}

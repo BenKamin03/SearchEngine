@@ -89,25 +89,6 @@ public class Driver {
 		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
 		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
-
-	public static void method2() {
-		Path input = FileSystems.getDefault().getPath(
-				"C:\\Users\\benja\\Documents\\USFCA\\CS272\\project-tests\\input\\text\\guten\\pg37134.txt");
-
-		try {
-			BufferedReader reader = Files.newBufferedReader(input, StandardCharsets.UTF_8);
-			String line = null;
-			ArrayList<String> list = new ArrayList<String>();
-
-			while ((line = reader.readLine()) != null) {
-				String normalizedString = FileStemmer.normalizeString(line);
-
-			}
-		} catch (Exception ex) {
-
-		}
-	}
-
 	public static void method3(Path input) {
 		try {
 			BufferedReader reader = Files.newBufferedReader(input, StandardCharsets.UTF_8);
