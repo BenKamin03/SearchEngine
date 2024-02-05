@@ -2,6 +2,7 @@ package edu.usfca.cs272.utils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
+import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.NORWEGIAN;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -78,14 +80,13 @@ public class FileStemmer {
 	 * 
 	 * @return the normalized string
 	 */
-	private static String normalizeString(String str) {
-		String r = "";
-		for (char c : Normalizer.normalize(str, Normalizer.Form.NFD).toLowerCase().toCharArray()) {
-			//each character is either a lowercase letter, space or punctuation
-			if ("abcdefghijklmnopqrstuvwxyz ".contains(c + "")) { //masks to include only alphabet and spaces
-				r += c;
-			}
-		}
+	public static String normalizeString(String str) {
+
+
+		
+
+		String r = Normalizer.normalize(str.toLowerCase(), Normalizer.Form.NFD);
+		
 		return r;
 	}
 
