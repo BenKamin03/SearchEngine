@@ -2,7 +2,6 @@ package edu.usfca.cs272.utils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
-import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.NORWEGIAN;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
