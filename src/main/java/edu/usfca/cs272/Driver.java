@@ -69,18 +69,6 @@ public class Driver {
 		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
 
-	/*
-	 * ---------------------------------------------
-	 * 
-	 * Credit: FliegendeWurst, fan
-	 * https://stackoverflow.com/questions/20531247/how-to-check-the-extension-of-a-
-	 * java-7-path
-	 * 
-	 * ---------------------------------------------
-	 */
-	private static PathMatcher txtMatcher = FileSystems.getDefault().getPathMatcher("glob:*.txt");
-	private static PathMatcher textMatcher = FileSystems.getDefault().getPathMatcher("glob:*.text");
-
 	public static void fillHash(Map<String, Integer> hash, Path p, boolean isDirectory) {
 		/*
 		 * ---------------------------------------------
@@ -98,15 +86,17 @@ public class Driver {
 					fillHash(hash, path, true);
 				}
 			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		} else {
 			// Path is a File --> Base Case
-			if (txtMatcher.matches(p.getFileName()) || textMatcher.matches(p.getFileName()) || !isDirectory) {
+			if (p.getFileName().toString().toLowerCase().endsWith(".txt") || p.getFileName().toString().toLowerCase().endsWith(".text") || !isDirectory) {
 				try {
 					int size = FileStemmer.listStems(p).size();
 					if (size > 0)
 						hash.put(p.toString(), (Integer) size);
 				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 			return;
