@@ -1,7 +1,6 @@
 package edu.usfca.cs272;
 
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -40,12 +39,19 @@ public class Driver {
 		// store initial start time
 		Instant start = Instant.now();
 
-		// TODO Fill in and modify as needed
 		System.out.println("Working Directory: " + Path.of(".").toAbsolutePath().normalize().getFileName());
 		System.out.println("Arguments: " + Arrays.toString(args));
+		long elapsed = Duration.between(start, Instant.now()).toMillis();
 
 		parser.parse(args);
+		version1_0();
 
+		// calculate time elapsed and output
+		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
+		System.out.printf("Elapsed: %f seconds%n", seconds);
+	}
+
+	public static void version1_0() {
 		if (parser.hasFlag("-text") && parser.getString("-text") != null && parser.getString("-text") != "") {
 			String path = parser.getString("-text");
 			String output_path = parser.getString("-counts", "counts.json");
@@ -56,17 +62,8 @@ public class Driver {
 			try {
 				JsonWriter.writeObject(hash, FileSystems.getDefault().getPath(output_path));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-
-		} else {
 		}
-
-		// calculate time elapsed and output
-		long elapsed = Duration.between(start, Instant.now()).toMillis();
-		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
-		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
 
 	public static void fillHash(Map<String, Integer> hash, Path p, boolean isDirectory) {
@@ -90,7 +87,8 @@ public class Driver {
 			}
 		} else {
 			// Path is a File --> Base Case
-			if (p.getFileName().toString().toLowerCase().endsWith(".txt") || p.getFileName().toString().toLowerCase().endsWith(".text") || !isDirectory) {
+			if (p.getFileName().toString().toLowerCase().endsWith(".txt")
+					|| p.getFileName().toString().toLowerCase().endsWith(".text") || !isDirectory) {
 				try {
 					int size = FileStemmer.listStems(p).size();
 					if (size > 0)
@@ -116,7 +114,5 @@ public class Driver {
 	 *
 	 * The starter code (calculating elapsed time) is not necessary. It can be
 	 * removed from the main method.
-	 *
-	 * TODO Delete this after reading.
 	 */
 }
