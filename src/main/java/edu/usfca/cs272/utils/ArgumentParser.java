@@ -1,6 +1,5 @@
 package edu.usfca.cs272.utils;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.HashMap;
 
@@ -53,8 +52,8 @@ public class ArgumentParser {
 	 */
 	public static boolean isFlag(String arg) {
 		if (arg != null && arg.length() > 1 && arg.charAt(0) == '-') {
-			char c = arg.charAt(1);
-			return !("0123456789".contains(c + "")) && !(Character.isWhitespace(c));
+			int second = arg.codePointAt(1);
+			return !(Character.isDigit(second)) && !(Character.isWhitespace(second));
 		}
 		return false;
 	}
@@ -80,7 +79,7 @@ public class ArgumentParser {
 		for (int i = 0; i < args.length; i++) {
 			if (isFlag(args[i])) {
 				if (i + 1 < args.length && isValue(args[i + 1])) {
-					map.put(args[i], args[i + 1]);
+					map.put(args[i], args[++i]);
 				} else {
 					map.put(args[i], null);
 				}
@@ -104,7 +103,7 @@ public class ArgumentParser {
 	 * @return {@code true} if the flag exists
 	 */
 	public boolean hasFlag(String flag) {
-		return (flag != null && map.keySet().contains(flag));
+		return map.keySet().contains(flag);
 	}
 
 	/**
@@ -114,7 +113,7 @@ public class ArgumentParser {
 	 * @return {@code true} if the flag is mapped to a non-null value
 	 */
 	public boolean hasValue(String flag) {
-		return (flag != null && map.get(flag) != null);
+		return map.get(flag) != null;
 	}
 
 	/**
@@ -127,8 +126,7 @@ public class ArgumentParser {
 	 *         if there is no mapping
 	 */
 	public String getString(String flag, String backup) {
-		String s = getString(flag);
-		return s != null ? s : backup;
+		return (map.get(flag) != null ? map.get(flag) : backup);
 	}
 
 	/**
@@ -140,7 +138,7 @@ public class ArgumentParser {
 	 *         there is no mapping
 	 */
 	public String getString(String flag) {
-		return (hasFlag(flag) ? map.get(flag) : null);
+		return getString(flag, null);
 	}
 
 	/**
@@ -158,8 +156,8 @@ public class ArgumentParser {
 	 * @see Path#of(String, String...)
 	 */
 	public Path getPath(String flag, Path backup) {
-		return ((flag != null && hasFlag(flag) && getString(flag) != null)
-				? FileSystems.getDefault().getPath(getString(flag))
+		return ((hasFlag(flag) && getString(flag) != null)
+				? Path.of(getString(flag))
 				: backup);
 	}
 
@@ -195,7 +193,7 @@ public class ArgumentParser {
 	public int getInteger(String flag, int backup) {
 		try {
 			return Integer.parseInt(getString(flag));
-		} catch (NumberFormatException ex) {
+		} catch (NumberFormatException | NullPointerException ex) {
 			return backup;
 		}
 	}

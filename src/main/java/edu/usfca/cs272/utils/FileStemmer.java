@@ -84,8 +84,8 @@ public class FileStemmer {
 	 * @see Collection#add(Object)
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
-		for (String s : split(clean(line))) {
-			if (s != null && !s.equals("")) //removes empty string cases
+		for (String s : parse(line)) {
+			if (s != null)
 				stems.add((String) stemmer.stem(s));
 		}
 	}
@@ -140,11 +140,10 @@ public class FileStemmer {
 		try (BufferedReader reader = Files.newBufferedReader(input, UTF_8);) {
 			String line = null;
 			ArrayList<String> list = new ArrayList<String>();
+			SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
 
 			while ((line = reader.readLine()) != null) {
-				for (String s : listStems(line)) {
-					list.add(s);
-				}
+				addStems(line, stemmer, list);
 			}
 
 			return list;
@@ -164,9 +163,7 @@ public class FileStemmer {
 	 */
 	public static TreeSet<String> uniqueStems(String line, Stemmer stemmer) {
 		TreeSet<String> tree = new TreeSet<String>();
-		for (String s : listStems(line, stemmer)) {
-			tree.add(s);
-		}
+		tree.addAll(listStems(line, stemmer));
 		return tree;
 	}
 
@@ -200,10 +197,7 @@ public class FileStemmer {
 	 */
 	public static TreeSet<String> uniqueStems(Path input) throws IOException {
 		TreeSet<String> tree = new TreeSet<String>();
-
-		for (String s : listStems(input)) {
-			tree.add(s);
-		}
+		tree.addAll(listStems(input));
 		return tree;
 	}
 
