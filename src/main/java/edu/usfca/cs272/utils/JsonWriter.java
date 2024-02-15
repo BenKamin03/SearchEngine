@@ -9,11 +9,16 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+
+import com.google.errorprone.annotations.Var;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -85,7 +90,8 @@ public class JsonWriter {
 	 * @see #writeIndent(Writer, int)
 	 * @see #writeIndent(String, Writer, int)
 	 */
-	public static void writeArray(Collection<? extends Number> elements, Writer writer, int indent) throws IOException {
+	public static void writeArray(Collection<? extends Number> elements, Writer writer, int indent)
+			throws IOException {
 		var iterator = elements.iterator();
 		writeIndent("[\n", writer, 0);
 		while (iterator.hasNext()) {
@@ -366,5 +372,59 @@ public class JsonWriter {
 
 	/** Prevent instantiating this class of static methods. */
 	private JsonWriter() {
+	}
+
+	public static void writeObjectHash(
+			SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash,
+			Writer writer, int indent)
+			throws IOException {
+		// TODO Auto-generated method stub
+		writeIndent("{\n", writer, indent);
+		var iterator = hash.entrySet().iterator();
+		while (iterator.hasNext()) {
+			var element = iterator.next();
+			writeQuote(element.getKey(), writer, indent + 1);
+			writer.write(": ");
+			writeObjectArrays(hash.get(element.getKey()), writer, indent + 1);
+			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+		}
+		writeIndent("}", writer, indent);
+	}
+
+	// SortedMap<String, Hashtable<String, ArrayList<Integer>>>
+	public static void writeObjectHash(
+			SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash,
+			Path path)
+			throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeObjectHash(hash, writer, 0);
+		}
+	}
+
+	public static void writeObjectArrays2(SortedMap<String, SortedMap<String, ArrayList<Integer>>> sortedMap, Writer writer,
+			int indent) throws IOException {
+		var iterator = sortedMap.entrySet().iterator();
+		writeIndent("{\n", writer, 0);
+		while (iterator.hasNext()) {
+			var element = iterator.next();
+			writeQuote(element.getKey(), writer, indent + 1);
+			writer.write(": " + sortedMap.get(element.getKey()));
+			writeObject2(sortedMap.get(element.getKey()), writer, indent + 1);
+			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+		}
+		writeIndent("}", writer, indent);
+	}
+
+	public static void writeObject2(SortedMap<String, ArrayList<Integer>> elements, Writer writer, int indent) throws IOException {
+		var iterator = elements.entrySet().iterator();
+		writeIndent("{\n", writer, 0);
+		while (iterator.hasNext()) {
+			var element = iterator.next();
+			writeQuote(element.getKey(), writer, indent + 1);
+			writer.write(": ");
+			writeArray(elements.get(element.getKey()), writer, indent + 1);
+			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+		}
+		writeIndent("}", writer, indent);
 	}
 }
