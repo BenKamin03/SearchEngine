@@ -58,6 +58,9 @@ public class Driver {
 		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
 	
+	/*
+	 * Method to check if a variable is null and set it to a safe value if it is
+	 */
 	public static <T> T checkSafeValue(T variable, T safeValue) {
           if (variable == null) {
                return safeValue;
