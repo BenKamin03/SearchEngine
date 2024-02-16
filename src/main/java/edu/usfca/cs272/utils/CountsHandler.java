@@ -19,7 +19,7 @@ public class CountsHandler {
 		if (parser.hasFlag("-counts")) {
 			Path in = parser.getPath("-text");
 
-			Path out_backup = FileSystems.getDefault().getPath("counts.json");
+			Path out_backup = Path.of("counts.json");
 			Path out = parser.getPath("-counts", out_backup);
 
 			SortedMap<String, Integer> hash = new TreeMap<>();

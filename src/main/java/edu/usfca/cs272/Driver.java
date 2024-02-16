@@ -38,7 +38,7 @@ public class Driver {
 		parser.parse(args);
 
 		CountsHandler.run(parser);
-		IndexHandler.run(parser);
+		//IndexHandler.run(parser);
 
 		// calculate time elapsed and output
 		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();

@@ -21,7 +21,7 @@ public class IndexHandler {
           if (parser.hasFlag("-index")) {
                Path in = parser.getPath("-text");
 
-               Path out_backup = FileSystems.getDefault().getPath("index.json");
+               Path out_backup = Path.of("index.json");
                Path out = parser.getPath("-index", out_backup);
 
                SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash = new TreeMap<>();
@@ -80,12 +80,13 @@ public class IndexHandler {
           ArrayList<String> stems = FileStemmer.listStems(p);
           if (stems.size() > 0) {
                int i = 1;
-               for (String s : stems) {
-                    SortedMap<String, ArrayList<Integer>> table = Driver.checkSafeValue(hash.get(s), new TreeMap<>());
+               for (String stem : stems) {
+                    SortedMap<String, ArrayList<Integer>> table = Driver.checkSafeValue(hash.get(stem),
+                              new TreeMap<>());
                     ArrayList<Integer> list = Driver.checkSafeValue(table.get(p.toString()), new ArrayList<>());
                     list.add(i++);
                     table.put(p.toString(), list);
-                    hash.put(s, table);
+                    hash.put(stem, table);
                }
           }
      }
