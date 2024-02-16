@@ -12,13 +12,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-
-import com.google.errorprone.annotations.Var;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -340,6 +337,109 @@ public class JsonWriter {
 	}
 
 	/**
+	 * Writes the elements as a pretty JSON array with nested objects to file.
+	 *
+	 * @param elements the elements to write
+	 * @param path     the file path to use
+	 * @throws IOException if an IO error occurs
+	 *
+	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
+	 * @see StandardCharsets#UTF_8
+	 * @see #writeArrayObjects(Collection)
+	 */
+	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> hash,
+			Path path)
+			throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeObjectHash(hash, writer, 0);
+		}
+	}
+
+	/**
+	 * Returns the elements as a pretty JSON array with nested objects and arrays.
+	 *
+	 * @param elements the elements to use
+	 * @return a {@link String} containing the elements in pretty JSON format
+	 *
+	 * @see StringWriter
+	 * @see #writeArrayObjects(Collection)
+	 */
+	public static String writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> elements) {
+		try {
+			StringWriter writer = new StringWriter();
+			writeObjectHash(elements, writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON array with nested objects. The generic
+	 * notation used allows this method to be used for any type of collection with
+	 * any type of nested map of String keys to number objects.
+	 *
+	 * @param elements the elements to write
+	 * @param writer   the writer to use
+	 * @param indent   the initial indent level; the first bracket is not indented,
+	 *                 inner elements are indented by one, and the last bracket is
+	 *                 indented at the
+	 *                 initial indentation level
+	 * @throws IOException if an IO error occurs
+	 *
+	 * @see Writer#write(String)
+	 * @see #writeIndent(Writer, int)
+	 * @see #writeIndent(String, Writer, int)
+	 * @see #writeObject(Map)
+	 */
+	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> hash,
+			Writer writer, int indent) throws IOException {
+		writeIndent("{\n", writer, indent);
+		var iterator = hash.entrySet().iterator();
+		while (iterator.hasNext()) {
+			var element = iterator.next();
+			writeQuote(element.getKey(), writer, indent + 1);
+			writer.write(": ");
+			writeObjectArrays(element.getValue(), writer, indent + 1);
+			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+		}
+		writeIndent("}", writer, indent);
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON array with nested objects. The generic
+	 * notation used allows this method to be used for any type of collection with
+	 * any type of nested map of String keys to number objects.
+	 *
+	 * @param elements the elements to write
+	 * @param writer   the writer to use
+	 * @param indent   the initial indent level; the first bracket is not indented,
+	 *                 inner elements are indented by one, and the last bracket is
+	 *                 indented at the
+	 *                 initial indentation level
+	 * @throws IOException if an IO error occurs
+	 *
+	 * @see Writer#write(String)
+	 * @see #writeIndent(Writer, int)
+	 * @see #writeIndent(String, Writer, int)
+	 * @see #writeObject(Map)
+	 */
+	public static void writeArrayObjects(Map<String, ? extends Collection<Integer>> elements, Writer writer,
+			int indent)
+			throws IOException {
+		var iterator = elements.entrySet().iterator();
+		writeIndent("{\n", writer, 0);
+		while (iterator.hasNext()) {
+			var element = iterator.next();
+			writeQuote(element.getKey(), writer, indent + 1);
+			writer.write(": ");
+			writeArray(elements.get(element.getKey()), writer, indent + 1);
+			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+		}
+		writeIndent("}", writer, indent);
+	}
+
+	/**
 	 * Demonstrates this class.
 	 *
 	 * @param args unused
@@ -372,59 +472,5 @@ public class JsonWriter {
 
 	/** Prevent instantiating this class of static methods. */
 	private JsonWriter() {
-	}
-
-	public static void writeObjectHash(
-			SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash,
-			Writer writer, int indent)
-			throws IOException {
-		// TODO Auto-generated method stub
-		writeIndent("{\n", writer, indent);
-		var iterator = hash.entrySet().iterator();
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": ");
-			writeObjectArrays(hash.get(element.getKey()), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
-		}
-		writeIndent("}", writer, indent);
-	}
-
-	// SortedMap<String, Hashtable<String, ArrayList<Integer>>>
-	public static void writeObjectHash(
-			SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash,
-			Path path)
-			throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeObjectHash(hash, writer, 0);
-		}
-	}
-
-	public static void writeObjectArrays2(SortedMap<String, SortedMap<String, ArrayList<Integer>>> sortedMap, Writer writer,
-			int indent) throws IOException {
-		var iterator = sortedMap.entrySet().iterator();
-		writeIndent("{\n", writer, 0);
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": " + sortedMap.get(element.getKey()));
-			writeObject2(sortedMap.get(element.getKey()), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
-		}
-		writeIndent("}", writer, indent);
-	}
-
-	public static void writeObject2(SortedMap<String, ArrayList<Integer>> elements, Writer writer, int indent) throws IOException {
-		var iterator = elements.entrySet().iterator();
-		writeIndent("{\n", writer, 0);
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": ");
-			writeArray(elements.get(element.getKey()), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
-		}
-		writeIndent("}", writer, indent);
 	}
 }
