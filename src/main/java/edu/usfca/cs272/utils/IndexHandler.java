@@ -1,7 +1,6 @@
 package edu.usfca.cs272.utils;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ public class IndexHandler {
       * 
       * @param hash        - Map to fill with stems
       * @param p           - Path to file or directory to process ( recursive )
-      * @param isDirectory - True if Path is a directory false if
+      * @param isDirectory - True if Path is a directory false if it's a file
       */
      public static void fillHash(SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash, Path p,
                boolean isDirectory) {
@@ -75,19 +74,37 @@ public class IndexHandler {
           }
      }
 
+     /**
+      * Goes through each stem in the file
+      *
+      * @param hash        - Map to fill with stems
+      * @param p           - Path to file or directory to process
+      */
      public static void handleFile(SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash, Path p)
                throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(p);
           if (stems.size() > 0) {
                int i = 1;
                for (String stem : stems) {
-                    SortedMap<String, ArrayList<Integer>> table = Driver.checkSafeValue(hash.get(stem),
-                              new TreeMap<>());
-                    ArrayList<Integer> list = Driver.checkSafeValue(table.get(p.toString()), new ArrayList<>());
-                    list.add(i++);
-                    table.put(p.toString(), list);
-                    hash.put(stem, table);
+                    handleAdd(hash, stem, p, i++);
                }
           }
+     }
+
+     /**
+      * Adds the index to the word in the hash. If the hash doesn't exist, it creates it. If the list doesn't exist, it creates it. 
+      *
+      * @param hash        - Map to fill with stems
+      * @param p           - Path to file or directory to process
+      * @param index       - The index of the word in the file
+      */
+     public static void handleAdd(SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash, String stem, Path p,
+               int index) {
+          SortedMap<String, ArrayList<Integer>> table = Driver.checkSafeValue(hash.get(stem),
+                    new TreeMap<>());
+          ArrayList<Integer> list = Driver.checkSafeValue(table.get(p.toString()), new ArrayList<>());
+          list.add(index);
+          table.put(p.toString(), list);
+          hash.put(stem, table);
      }
 }

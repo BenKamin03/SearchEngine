@@ -25,7 +25,6 @@ public class CountsHandler {
 			SortedMap<String, Integer> hash = new TreeMap<>();
 			if (in != null)
 				fillHash(hash, in, false);
-
 			try {
 				JsonWriter.writeObject(hash, out);
 			} catch (IOException e) {}
@@ -37,7 +36,7 @@ public class CountsHandler {
 	* 
 	* @param hash - Map to fill with stem info
 	* @param p - Path to use for filling Hashes ( can be Directory )
-	* @param isDirectory - True if p is a Directory false if
+	* @param isDirectory - True if p is a Directory false if it's a file
 	*/
 	public static void fillHash(SortedMap<String, Integer> hash, Path p, boolean isDirectory) {
 		/*
