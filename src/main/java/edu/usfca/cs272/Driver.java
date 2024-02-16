@@ -3,23 +3,10 @@ package edu.usfca.cs272;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.CountsHandler;
-import edu.usfca.cs272.utils.FileStemmer;
 import edu.usfca.cs272.utils.IndexHandler;
-import edu.usfca.cs272.utils.JsonWriter;
 
 /**
  * Class responsible for running this project based on the provided command-line
