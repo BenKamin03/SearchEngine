@@ -61,7 +61,6 @@ public class IndexHandler {
                          fillHash(hash, path, true);
                     }
                } catch (Exception ex) {
-                    ex.printStackTrace();
                }
           } else {
                // Path is a File --> Base Case
@@ -70,7 +69,6 @@ public class IndexHandler {
                     try {
                          handleFile(hash, p);
                     } catch (Exception ex) {
-                         ex.printStackTrace();
                     }
                }
                return;

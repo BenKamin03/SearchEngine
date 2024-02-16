@@ -56,7 +56,6 @@ public class CountsHandler {
 					fillHash(hash, path, true);
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace();
 			}
 		} else {
 			// Path is a File --> Base Case
@@ -67,7 +66,6 @@ public class CountsHandler {
 					if (size > 0)
 						hash.put(p.toString(), (Integer) size);
 				} catch (Exception ex) {
-					ex.printStackTrace();
 				}
 			}
 			return;
