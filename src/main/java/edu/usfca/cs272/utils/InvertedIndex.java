@@ -6,19 +6,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class InvertedIndex {
-     /*
-      * TODO
-      * Create an InvertedIndex data structure with 2 members:
-      *
-      * SortedMap<String, SortedMap<String, ArrayList<Integer>>> index = new
-      * TreeMap<>();
-      * SortedMap<String, Integer> counts = new TreeMap<>();
-      *
-      * Create a separate Handler or Builder etc. class that deals with directories
-      * and files
-      *
-      *
-      */
 
      private SortedMap<String, SortedMap<String, ArrayList<Integer>>> indexes;
      private SortedMap<String, Integer> counts;
