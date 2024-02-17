@@ -84,9 +84,10 @@ public class FileStemmer {
 	 * @see Collection#add(Object)
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
-		for (String s : parse(line)) {
-			if (s != null)
-				stems.add((String) stemmer.stem(s));
+		for (String s : parse(line)) { // TODO String word : parse(line)
+			if (s != null) { // TODO Remove
+				stems.add((String) stemmer.stem(s)); // TODO stemmer.stem(s).toString();
+			}
 		}
 	}
 
@@ -162,8 +163,8 @@ public class FileStemmer {
 	 * @see #addStems(String, Stemmer, Collection)
 	 */
 	public static TreeSet<String> uniqueStems(String line, Stemmer stemmer) {
-		TreeSet<String> tree = new TreeSet<String>();
-		tree.addAll(listStems(line, stemmer));
+		TreeSet<String> tree = new TreeSet<String>(); // TODO stems
+		tree.addAll(listStems(line, stemmer)); // TODO Reuse addStems
 		return tree;
 	}
 
@@ -196,6 +197,7 @@ public class FileStemmer {
 	 * @see #uniqueStems(String, Stemmer)
 	 */
 	public static TreeSet<String> uniqueStems(Path input) throws IOException {
+		// TODO BufferedReader
 		TreeSet<String> tree = new TreeSet<String>();
 		tree.addAll(listStems(input));
 		return tree;
@@ -222,6 +224,7 @@ public class FileStemmer {
 		// CITE: Lecture Code - Prof. Sophie Engle
 		try (BufferedReader reader = Files.newBufferedReader(input, UTF_8);) {
 			String line = null;
+			// TODO Create and reuse a stemmer object
 
 			while ((line = reader.readLine()) != null) {
 				list.add(uniqueStems(line));
@@ -237,7 +240,7 @@ public class FileStemmer {
 	 * @param args unused
 	 * @throws IOException if an I/O error occurs
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException { // TODO Remove
 		// demonstrates how to use split, clean, and parse
 		System.out.println("____PARSING DEMO____");
 		System.out.println();

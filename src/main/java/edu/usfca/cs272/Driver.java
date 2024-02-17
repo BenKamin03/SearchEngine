@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.CountsHandler;
 import edu.usfca.cs272.utils.IndexHandler;
@@ -35,6 +36,33 @@ public class Driver {
 		System.out.println("Arguments: " + Arrays.toString(args));
 		long elapsed = Duration.between(start, Instant.now()).toMillis();
 
+
+		/* TODO
+		 *
+		InvertedIndex index = ...
+
+		if (parser.hasFlag("-text")) {
+      Path in = parser.getPath("-text");
+
+      try {
+      		1-2 lines of code here
+      }
+      catch ( ) {
+      		warn the user
+      }
+		}
+
+		if (parser.hasFlag("-index")) {
+      Path in = parser.getPath("-index");
+
+		}
+
+		if (parser.hasFlag("-counts")) {
+      Path in = parser.getPath("-counts");
+
+		}
+		 */
+
 		parser.parse(args);
 
 		CountsHandler.run(parser);
@@ -44,7 +72,7 @@ public class Driver {
 		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
 		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
-	
+
 	/*
 	 * Method to check if a variable is null and set it to a safe value if it is
 	 */

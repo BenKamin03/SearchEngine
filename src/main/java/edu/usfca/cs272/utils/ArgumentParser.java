@@ -53,7 +53,7 @@ public class ArgumentParser {
 	public static boolean isFlag(String arg) {
 		if (arg != null && arg.length() > 1 && arg.charAt(0) == '-') {
 			int second = arg.codePointAt(1);
-			return !(Character.isDigit(second)) && !(Character.isWhitespace(second));
+			return !Character.isDigit(second) && !Character.isWhitespace(second);
 		}
 		return false;
 	}
@@ -103,7 +103,7 @@ public class ArgumentParser {
 	 * @return {@code true} if the flag exists
 	 */
 	public boolean hasFlag(String flag) {
-		return map.keySet().contains(flag);
+		return map.keySet().contains(flag); // TODO map.containsKey(...)
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class ArgumentParser {
 	 *         if there is no mapping
 	 */
 	public String getString(String flag, String backup) {
-		return (map.get(flag) != null ? map.get(flag) : backup);
+		return map.get(flag) != null ? map.get(flag) : backup;
 	}
 
 	/**
@@ -156,9 +156,9 @@ public class ArgumentParser {
 	 * @see Path#of(String, String...)
 	 */
 	public Path getPath(String flag, Path backup) {
-		return ((hasFlag(flag) && getString(flag) != null)
+		return hasFlag(flag) && getString(flag) != null
 				? Path.of(getString(flag))
-				: backup);
+				: backup;
 	}
 
 	/**
@@ -223,7 +223,7 @@ public class ArgumentParser {
 	 *
 	 * @param args the arguments to test
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) { // TODO Remove
 		// Feel free to modify or delete this method for debugging
 		if (args.length < 1) {
 			args = new String[] { "-max", "false", "-min", "0", "-min", "-10", "hello", "-@debug",

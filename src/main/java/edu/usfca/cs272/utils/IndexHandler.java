@@ -10,10 +10,22 @@ import java.util.TreeMap;
 import edu.usfca.cs272.Driver;
 
 public class IndexHandler {
+	/*
+	 * TODO
+	 * Create an InvertedIndex data structure with 2 members:
+	 *
+	 * SortedMap<String, SortedMap<String, ArrayList<Integer>>> index = new TreeMap<>();
+	 * SortedMap<String, Integer> counts = new TreeMap<>();
+	 *
+	 * Create a separate Handler or Builder etc. class that deals with directories and files
+	 *
+	 *
+	 */
+
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-      * 
+      *
       * @param parser - the command line argument
       */
      public static void run(ArgumentParser parser) {
@@ -24,8 +36,9 @@ public class IndexHandler {
                Path out = parser.getPath("-index", out_backup);
 
                SortedMap<String, SortedMap<String, ArrayList<Integer>>> hash = new TreeMap<>();
-               if (in != null)
-                    fillHash(hash, in, false);
+               if (in != null) {
+								fillHash(hash, in, false);
+							}
 
                try {
                     JsonWriter.writeObjectHash(hash, out);
@@ -37,7 +50,7 @@ public class IndexHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
-      * 
+      *
       * @param hash        - Map to fill with stems
       * @param p           - Path to file or directory to process ( recursive )
       * @param isDirectory - True if Path is a directory false if it's a file
@@ -46,11 +59,11 @@ public class IndexHandler {
                boolean isDirectory) {
           /*
            * ---------------------------------------------
-           * 
+           *
            * Credit: Sophie Engle
            * https://github.com/usf-cs272-spring2024/cs272-lectures/blob/main/src/main/
            * java/edu/usfca/cs272/lectures/basics/io/DirectoryStreamDemo.java
-           * 
+           *
            * ---------------------------------------------
            */
           if (Files.isDirectory(p)) {
@@ -92,7 +105,7 @@ public class IndexHandler {
      }
 
      /**
-      * Adds the index to the word in the hash. If the hash doesn't exist, it creates it. If the list doesn't exist, it creates it. 
+      * Adds the index to the word in the hash. If the hash doesn't exist, it creates it. If the list doesn't exist, it creates it.
       *
       * @param hash        - Map to fill with stems
       * @param p           - Path to file or directory to process
