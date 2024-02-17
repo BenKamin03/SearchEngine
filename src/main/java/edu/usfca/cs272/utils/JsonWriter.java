@@ -334,8 +334,7 @@ public class JsonWriter {
 		}
 	}
 
-	// TODO Integer --> ? extends Number
-
+	
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 *
@@ -347,7 +346,7 @@ public class JsonWriter {
 	 * @see StandardCharsets#UTF_8
 	 * @see #writeArrayObjects(Collection)
 	 */
-	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> hash,
+	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
 			Path path)
 			throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
@@ -392,7 +391,7 @@ public class JsonWriter {
 	 * @see #writeIndent(String, Writer, int)
 	 * @see #writeObject(Map)
 	 */
-	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> hash,
+	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
 			Writer writer, int indent) throws IOException {
 		writeIndent("{\n", writer, indent);
 		var iterator = hash.entrySet().iterator();
@@ -404,70 +403,6 @@ public class JsonWriter {
 			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("}", writer, indent);
-	}
-
-	/**
-	 * Writes the elements as a pretty JSON array with nested objects. The generic
-	 * notation used allows this method to be used for any type of collection with
-	 * any type of nested map of String keys to number objects.
-	 *
-	 * @param elements the elements to write
-	 * @param writer   the writer to use
-	 * @param indent   the initial indent level; the first bracket is not indented,
-	 *                 inner elements are indented by one, and the last bracket is
-	 *                 indented at the
-	 *                 initial indentation level
-	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Writer#write(String)
-	 * @see #writeIndent(Writer, int)
-	 * @see #writeIndent(String, Writer, int)
-	 * @see #writeObject(Map)
-	 */
-	public static void writeArrayObjects(Map<String, ? extends Collection<Integer>> elements, Writer writer,
-			int indent) // TODO Try to remove?
-			throws IOException {
-		var iterator = elements.entrySet().iterator();
-		writeIndent("{\n", writer, 0);
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": ");
-			writeArray(elements.get(element.getKey()), writer, indent + 1);
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
-		}
-		writeIndent("}", writer, indent);
-	}
-
-	/**
-	 * Demonstrates this class.
-	 *
-	 * @param args unused
-	 */
-	public static void main(String[] args) {
-		Set<Integer> empty = Collections.emptySet();
-		Set<Integer> single = Set.of(42);
-		List<Integer> simple = List.of(65, 66, 67);
-
-		System.out.println("\nArrays:");
-		System.out.println(writeArray(empty));
-		System.out.println(writeArray(single));
-		System.out.println(writeArray(simple));
-
-		System.out.println("\nObjects:");
-		System.out.println(writeObject(Collections.emptyMap()));
-		System.out.println(writeObject(Map.of("hello", 42)));
-		System.out.println(writeObject(Map.of("hello", 42, "world", 67)));
-
-		System.out.println("\nNested Arrays:");
-		System.out.println(writeObjectArrays(Collections.emptyMap()));
-		System.out.println(writeObjectArrays(Map.of("hello", single)));
-		System.out.println(writeObjectArrays(Map.of("hello", single, "world", simple)));
-
-		System.out.println("\nNested Objects:");
-		System.out.println(writeArrayObjects(Collections.emptyList()));
-		System.out.println(writeArrayObjects(Set.of(Map.of("hello", 3.12))));
-		System.out.println(writeArrayObjects(Set.of(Map.of("hello", 3.12, "world", 2.04), Map.of("apple", 0.04))));
 	}
 
 	/** Prevent instantiating this class of static methods. */

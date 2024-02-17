@@ -103,7 +103,7 @@ public class ArgumentParser {
 	 * @return {@code true} if the flag exists
 	 */
 	public boolean hasFlag(String flag) {
-		return map.keySet().contains(flag); // TODO map.containsKey(...)
+		return map.containsKey(flag);
 	}
 
 	/**
@@ -161,6 +161,10 @@ public class ArgumentParser {
 				: backup;
 	}
 
+	public Path getPathIfFlag(String flag, Path backup) {
+		return (hasFlag(flag) ? (getString(flag) != null ? Path.of(getString(flag)) : backup) : null);
+	}
+
 	/**
 	 * Returns the value to which the specified flag is mapped as a {@link Path}, or
 	 * {@code null} if unable to retrieve this mapping (including being unable to
@@ -216,23 +220,5 @@ public class ArgumentParser {
 	@Override
 	public String toString() {
 		return this.map.toString();
-	}
-
-	/**
-	 * Demonstrates this class.
-	 *
-	 * @param args the arguments to test
-	 */
-	public static void main(String[] args) { // TODO Remove
-		// Feel free to modify or delete this method for debugging
-		if (args.length < 1) {
-			args = new String[] { "-max", "false", "-min", "0", "-min", "-10", "hello", "-@debug",
-					"-f", "output.txt", "-verbose" };
-		}
-
-		// expected output:
-		// {-max=false, -min=-10, -verbose=null, -f=output.txt, -@debug=null}
-		ArgumentParser map = new ArgumentParser(args);
-		System.out.println(map);
 	}
 }

@@ -1,13 +1,14 @@
 package edu.usfca.cs272;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
 import edu.usfca.cs272.utils.ArgumentParser;
-import edu.usfca.cs272.utils.CountsHandler;
-import edu.usfca.cs272.utils.IndexHandler;
+import edu.usfca.cs272.utils.FileHandler;
+import edu.usfca.cs272.utils.InvertedIndex;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -27,7 +28,6 @@ public class Driver {
 	 * @param args flag/value pairs used to start this program
 	 */
 	public static void main(String[] args) {
-		ArgumentParser parser = new ArgumentParser();
 
 		// store initial start time
 		Instant start = Instant.now();
@@ -36,65 +36,40 @@ public class Driver {
 		System.out.println("Arguments: " + Arrays.toString(args));
 		long elapsed = Duration.between(start, Instant.now()).toMillis();
 
-
-		/* TODO
-		 *
-		InvertedIndex index = ...
-
-		if (parser.hasFlag("-text")) {
-      Path in = parser.getPath("-text");
-
-      try {
-      		1-2 lines of code here
-      }
-      catch ( ) {
-      		warn the user
-      }
-		}
-
-		if (parser.hasFlag("-index")) {
-      Path in = parser.getPath("-index");
-
-		}
-
-		if (parser.hasFlag("-counts")) {
-      Path in = parser.getPath("-counts");
-
-		}
-		 */
-
-		parser.parse(args);
-
-		CountsHandler.run(parser);
-		IndexHandler.run(parser);
+		run(args);
 
 		// calculate time elapsed and output
 		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
 		System.out.printf("Elapsed: %f seconds%n", seconds);
 	}
 
-	/*
-	 * Method to check if a variable is null and set it to a safe value if it is
-	 */
-	public static <T> T checkSafeValue(T variable, T safeValue) {
-          if (variable == null) {
-               return safeValue;
-          }
-          return variable;
-     }
+	private static void run(String[] args) {
+		ArgumentParser parser = new ArgumentParser();
+		
+		parser.parse(args);
 
-	/*
-	 * Generally, "Driver" classes are responsible for setting up and calling other
-	 * classes, usually from a main() method that parses command-line parameters.
-	 * Generalized reusable code are usually placed outside of the Driver class.
-	 * They are sometimes called "Main" classes too, since they usually include the
-	 * main() method.
-	 *
-	 * If the driver were only responsible for a single class, we use that class
-	 * name. For example, "TaxiDriver" is what we would name a driver class that
-	 * just sets up and calls the "Taxi" class.
-	 *
-	 * The starter code (calculating elapsed time) is not necessary. It can be
-	 * removed from the main method.
-	 */
+		Path text = parser.getPath("-text");
+
+		Path countsPath = null, indexesPath = null;
+		if (parser.hasFlag("-counts"))
+			countsPath = parser.getPath("-counts", Path.of("counts.json"));
+		if (parser.hasFlag("-index"))
+			indexesPath = parser.getPath("-index", Path.of("index.json"));
+
+		InvertedIndex invertedIndex = new InvertedIndex();
+
+		if (indexesPath != null || countsPath != null) {
+			try {
+				FileHandler fileHandler = new FileHandler(text, indexesPath, countsPath, invertedIndex);
+				if (text != null) {
+					fileHandler.fillInvertedIndex();
+				}
+				fileHandler.write();
+			} catch (IOException ex) {
+				System.out.println("Missing input file.");
+			}
+		} else {
+			System.out.println("Missing flag: -index or -counts");
+		}
+	}
 }
