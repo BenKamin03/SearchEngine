@@ -9,13 +9,11 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -94,7 +92,7 @@ public class JsonWriter {
 		while (iterator.hasNext()) {
 			var element = iterator.next();
 			writeIndent(element + "", writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("]", writer, indent);
 	}
@@ -158,7 +156,7 @@ public class JsonWriter {
 			var element = iterator.next();
 			writeQuote(element.getKey(), writer, indent + 1);
 			writer.write(": " + elements.get(element.getKey()));
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("}", writer, indent);
 	}
@@ -226,7 +224,7 @@ public class JsonWriter {
 			writeQuote(element.getKey(), writer, indent + 1);
 			writer.write(": ");
 			writeArray(elements.get(element.getKey()), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("}", writer, indent);
 	}
@@ -294,7 +292,7 @@ public class JsonWriter {
 			var element = iterator.next();
 			writeIndent(writer, indent + 1);
 			writeObject(element, writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("]", writer, indent);
 	}
@@ -335,6 +333,8 @@ public class JsonWriter {
 			return null;
 		}
 	}
+
+	// TODO Integer --> ? extends Number
 
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
@@ -401,7 +401,7 @@ public class JsonWriter {
 			writeQuote(element.getKey(), writer, indent + 1);
 			writer.write(": ");
 			writeObjectArrays(element.getValue(), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("}", writer, indent);
 	}
@@ -425,7 +425,7 @@ public class JsonWriter {
 	 * @see #writeObject(Map)
 	 */
 	public static void writeArrayObjects(Map<String, ? extends Collection<Integer>> elements, Writer writer,
-			int indent)
+			int indent) // TODO Try to remove?
 			throws IOException {
 		var iterator = elements.entrySet().iterator();
 		writeIndent("{\n", writer, 0);
@@ -434,7 +434,7 @@ public class JsonWriter {
 			writeQuote(element.getKey(), writer, indent + 1);
 			writer.write(": ");
 			writeArray(elements.get(element.getKey()), writer, indent + 1);
-			writer.write((iterator.hasNext()) ? ",\n" : "\n");
+			writer.write(iterator.hasNext() ? ",\n" : "\n");
 		}
 		writeIndent("}", writer, indent);
 	}
