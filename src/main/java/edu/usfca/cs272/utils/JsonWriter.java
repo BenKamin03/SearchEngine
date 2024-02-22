@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -39,6 +40,11 @@ public class JsonWriter {
 		while (indent-- > 0) {
 			writer.write("  ");
 		}
+	}
+
+	public static void writeIndentOnNewLine(String element, Writer writer, int indent) throws IOException {
+		writer.write("\n");
+		writeIndent(element, writer, indent);
 	}
 
 	/**
@@ -88,13 +94,16 @@ public class JsonWriter {
 	public static void writeArray(Collection<? extends Number> elements, Writer writer, int indent)
 			throws IOException {
 		var iterator = elements.iterator();
-		writeIndent("[\n", writer, 0);
-		while (iterator.hasNext()) {
-			var element = iterator.next();
-			writeIndent(element + "", writer, indent + 1);
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
+
+		writer.write("[");
+		if (iterator.hasNext()) {
+			writeIndentOnNewLine(iterator.next().toString(), writer, indent + 1);
+			while (iterator.hasNext()) {
+				writer.write(",");
+				writeIndentOnNewLine(iterator.next().toString(), writer, indent + 1);
+			}
 		}
-		writeIndent("]", writer, indent);
+		writeIndentOnNewLine("]", writer, indent);
 	}
 
 	/**
@@ -133,6 +142,10 @@ public class JsonWriter {
 		}
 	}
 
+	public static String getObjectLine(String a, String b) {
+		return "\"" + a + "\": " + b;
+	}
+
 	/**
 	 * Writes the elements as a pretty JSON object.
 	 *
@@ -151,14 +164,20 @@ public class JsonWriter {
 	public static void writeObject(Map<String, ? extends Number> elements, Writer writer, int indent)
 			throws IOException {
 		var iterator = elements.entrySet().iterator();
-		writeIndent("{\n", writer, 0);
-		while (iterator.hasNext()) {
+
+		writer.write("{");
+		if (iterator.hasNext()) {
 			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": " + elements.get(element.getKey()));
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
+			writeIndentOnNewLine(getObjectLine(element.getKey(), elements.get(element.getKey()).toString()), writer,
+					indent + 1);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",");
+				writeIndentOnNewLine(getObjectLine(element.getKey(), elements.get(element.getKey()).toString()),
+						writer, indent + 1);
+			}
 		}
-		writeIndent("}", writer, indent);
+		writeIndentOnNewLine("}", writer, indent);
 	}
 
 	/**
@@ -197,12 +216,20 @@ public class JsonWriter {
 		}
 	}
 
+	public static void writeObjectArrayLine(Map<String, ? extends Collection<? extends Number>> elements,
+			Entry<String, ? extends Collection<? extends Number>> element, Writer writer, int indent)
+			throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": ");
+		writeArray(elements.get(element.getKey()), writer, indent + 1);
+	}
+
 	/**
 	 * Writes the elements as a pretty JSON object with nested arrays. The generic
 	 * notation used allows this method to be used for any type of map with any type
 	 * of nested collection of number objects.
 	 *
-	 * @param elements the elements to write
+	 * @param map the elements to write
 	 * @param writer   the writer to use
 	 * @param indent   the initial indent level; the first bracket is not indented,
 	 *                 inner elements are indented by one, and the last bracket is
@@ -215,18 +242,22 @@ public class JsonWriter {
 	 * @see #writeIndent(String, Writer, int)
 	 * @see #writeArray(Collection)
 	 */
-	public static void writeObjectArrays(Map<String, ? extends Collection<? extends Number>> elements, Writer writer,
+	public static void writeObjectArrays(Map<String, ? extends Collection<? extends Number>> map, Writer writer,
 			int indent) throws IOException {
-		var iterator = elements.entrySet().iterator();
-		writeIndent("{\n", writer, 0);
-		while (iterator.hasNext()) {
+		var iterator = map.entrySet().iterator();
+
+		writer.write("{");
+		if (iterator.hasNext()) {
 			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": ");
-			writeArray(elements.get(element.getKey()), writer, indent + 1);
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
+			writer.write("\n");
+			writeObjectArrayLine(map, element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeObjectArrayLine(map, element, writer, indent);
+			}
 		}
-		writeIndent("}", writer, indent);
+		writeIndentOnNewLine("}", writer, indent);
 	}
 
 	/**
@@ -266,6 +297,12 @@ public class JsonWriter {
 		}
 	}
 
+	public static void writeArrayObjectsLine(Collection<? extends Map<String, ? extends Number>> elements,
+			Map<String, ? extends Number> element, Writer writer, int indent) throws IOException {
+		writeIndent(writer, indent + 1);
+		writeObject(element, writer, indent + 1);
+	}
+
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects. The generic
 	 * notation used allows this method to be used for any type of collection with
@@ -287,14 +324,19 @@ public class JsonWriter {
 	public static void writeArrayObjects(Collection<? extends Map<String, ? extends Number>> elements, Writer writer,
 			int indent) throws IOException {
 		var iterator = elements.iterator();
-		writeIndent("[\n", writer, indent);
-		while (iterator.hasNext()) {
+
+		writer.write("[");
+		if (iterator.hasNext()) {
 			var element = iterator.next();
-			writeIndent(writer, indent + 1);
-			writeObject(element, writer, indent + 1);
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
+			writer.write("\n");
+			writeArrayObjectsLine(elements, element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeArrayObjectsLine(elements, element, writer, indent);
+			}
 		}
-		writeIndent("]", writer, indent);
+		writeIndentOnNewLine("]", writer, indent);
 	}
 
 	/**
@@ -334,7 +376,6 @@ public class JsonWriter {
 		}
 	}
 
-	
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 *
@@ -373,6 +414,12 @@ public class JsonWriter {
 		}
 	}
 
+	public static void writeObjectHashLine(Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer, int indent) throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": ");
+		writeObjectArrays(element.getValue(), writer, indent + 1);
+	}
+
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects. The generic
 	 * notation used allows this method to be used for any type of collection with
@@ -393,16 +440,31 @@ public class JsonWriter {
 	 */
 	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
 			Writer writer, int indent) throws IOException {
-		writeIndent("{\n", writer, indent);
+		// writeIndent("{\n", writer, indent);
+		// var iterator = hash.entrySet().iterator();
+		// while (iterator.hasNext()) {
+		// var element = iterator.next();
+		// writeQuote(element.getKey(), writer, indent + 1);
+		// writer.write(": ");
+		// writeObjectArrays(element.getValue(), writer, indent + 1);
+		// writer.write(iterator.hasNext() ? ",\n" : "\n");
+		// }
+		// writeIndent("}", writer, indent);
+
 		var iterator = hash.entrySet().iterator();
-		while (iterator.hasNext()) {
+
+		writer.write("{");
+		if (iterator.hasNext()) {
 			var element = iterator.next();
-			writeQuote(element.getKey(), writer, indent + 1);
-			writer.write(": ");
-			writeObjectArrays(element.getValue(), writer, indent + 1);
-			writer.write(iterator.hasNext() ? ",\n" : "\n");
+			writer.write("\n");
+			writeObjectHashLine(element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeObjectHashLine(element, writer, indent);
+			}
 		}
-		writeIndent("}", writer, indent);
+		writeIndentOnNewLine("}", writer, indent);
 	}
 
 	/** Prevent instantiating this class of static methods. */
