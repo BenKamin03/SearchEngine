@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class FileHandler {
 
-     private Path indexesPath, countsPath, textPath;
+     private Path indexesPath, countsPath, textPath; // TODO remove
      private InvertedIndex invertedIndex;
 
      /**
@@ -23,14 +23,14 @@ public class FileHandler {
           this.invertedIndex = invertedIndex;
      }
 
-     public void write() throws IOException {
+     public void write() throws IOException { // TODO remove
           if (indexesPath != null)
                JsonWriter.writeObjectHash(invertedIndex.getIndexes(), indexesPath);
           if (countsPath != null)
                JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
      }
      
-     public void fillInvertedIndex() throws IOException {
+     public void fillInvertedIndex() throws IOException { // TODO fillInvertedIndex(textPath)
           fillHash(textPath, false);
      }
 
@@ -42,7 +42,7 @@ public class FileHandler {
       * @param p           - Path to file or directory to process ( recursive )
       * @param isDirectory - True if Path is a directory false if it's a file
       */
-     public void fillHash(Path p, boolean isDirectory) throws IOException {
+     public void fillHash(Path p, boolean isDirectory) throws IOException { // TODO isDirectory --> requireText, p-> path or input
           /*
            * ---------------------------------------------
            *
@@ -66,7 +66,7 @@ public class FileHandler {
           }
      }
 
-     public void handleFile(Path p) throws IOException {
+     public void handleFile(Path p) throws IOException { // TODO fix names... Path file
           ArrayList<String> stems = FileStemmer.listStems(p);
           if (stems.size() > 0) {
                if (indexesPath != null) {
@@ -82,7 +82,8 @@ public class FileHandler {
           }
      }
 
-     private static boolean fileExtensionFilter(Path p, String[] extensions) {
+     private static boolean fileExtensionFilter(Path p, String[] extensions) { // TODO public
+    	 // TODO String lower = p.getFileName().toString().toLowerCase();
           for (String ext : extensions) {
                if (p.getFileName().toString().toLowerCase().endsWith(ext)) {
                     return true;
