@@ -1,8 +1,5 @@
 package edu.usfca.cs272.utils;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 

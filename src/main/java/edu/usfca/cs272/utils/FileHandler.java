@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class FileHandler {
 
-     private Path indexesPath, countsPath, textPath; // TODO remove
+     private Path indexesPath, countsPath;
      private InvertedIndex invertedIndex;
 
      /**
@@ -16,22 +16,14 @@ public class FileHandler {
       *
       * @param parser - the command line argument
       */
-     public FileHandler(Path textPath, Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
-          this.textPath = textPath;
+     public FileHandler(Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
           this.indexesPath = indexesPath;
           this.countsPath = countsPath;
           this.invertedIndex = invertedIndex;
      }
 
-     public void write() throws IOException { // TODO remove
-          if (indexesPath != null)
-               JsonWriter.writeObjectHash(invertedIndex.getIndexes(), indexesPath);
-          if (countsPath != null)
-               JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
-     }
-     
-     public void fillInvertedIndex() throws IOException { // TODO fillInvertedIndex(textPath)
-          fillHash(textPath, false);
+     public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
+          fillHash(textPath, true);
      }
 
      /**
@@ -42,7 +34,7 @@ public class FileHandler {
       * @param p           - Path to file or directory to process ( recursive )
       * @param isDirectory - True if Path is a directory false if it's a file
       */
-     public void fillHash(Path p, boolean isDirectory) throws IOException { // TODO isDirectory --> requireText, p-> path or input
+     public void fillHash(Path input, boolean requireText) throws IOException {
           /*
            * ---------------------------------------------
            *
@@ -52,40 +44,40 @@ public class FileHandler {
            *
            * ---------------------------------------------
            */
-          if (Files.isDirectory(p)) {
+          if (Files.isDirectory(input)) {
                // Path is a Directory --> Recurse Through Each Sub Path
-               for (Path path : Files.newDirectoryStream(p)) {
-                    fillHash(path, true);
+               for (Path path : Files.newDirectoryStream(input)) {
+                    fillHash(path, false);
                }
           } else {
                // Path is a File --> Base Case
-               if (fileExtensionFilter(p, new String[] { ".txt", ".text" }) || !isDirectory) {
-                    handleFile(p);
+               if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
+                    handleFile(input);
                }
                return;
           }
      }
 
-     public void handleFile(Path p) throws IOException { // TODO fix names... Path file
-          ArrayList<String> stems = FileStemmer.listStems(p);
+     public void handleFile(Path file) throws IOException {
+          ArrayList<String> stems = FileStemmer.listStems(file);
           if (stems.size() > 0) {
                if (indexesPath != null) {
                     int i = 1;
                     for (String stem : stems) {
-                         invertedIndex.addIndex(stem, p, i++);
+                         invertedIndex.addIndex(stem, file.toString(), i++);
                     }
                }
 
                if (countsPath != null) {
-                    invertedIndex.addCount(p.toString(), stems.size());
+                    invertedIndex.addCount(file.toString(), stems.size());
                }
           }
      }
 
-     private static boolean fileExtensionFilter(Path p, String[] extensions) { // TODO public
-    	 // TODO String lower = p.getFileName().toString().toLowerCase();
+     public static boolean fileExtensionFilter(Path p, String[] extensions) {
+          String lower = p.getFileName().toString().toLowerCase();
           for (String ext : extensions) {
-               if (p.getFileName().toString().toLowerCase().endsWith(ext)) {
+               if (lower.endsWith(ext)) {
                     return true;
                }
           }
