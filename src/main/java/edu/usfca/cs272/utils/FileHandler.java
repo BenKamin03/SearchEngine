@@ -5,6 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+/**
+ * Class responsible for filling the InvertedIndex
+ *
+ * @author Ben Kamin
+ * @author CS 272 Software Development (University of San Francisco)
+ * @version Spring 2024
+ */
 public class FileHandler {
 
      private Path indexesPath, countsPath;

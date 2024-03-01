@@ -6,7 +6,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
+/**
+ * Class responsible for keeping the data structures for the indexes and counts of the files
+ *
+ * @author Ben Kamin
+ * @author CS 272 Software Development (University of San Francisco)
+ * @version Spring 2024
+ */
 public class InvertedIndex {
 
      private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
