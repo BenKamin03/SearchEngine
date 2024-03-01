@@ -140,6 +140,7 @@ public class FileStemmer {
 			ArrayList<String> list = new ArrayList<String>();
 			SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
 
+			// Reads a line from the input stream and adds the stemmer to the list.
 			while ((line = reader.readLine()) != null) {
 				addStems(line, stemmer, list);
 			}
@@ -199,6 +200,7 @@ public class FileStemmer {
 			TreeSet<String> stemsTree = new TreeSet<String>();
 			SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
 
+			// Read a line from the reader and add them to the stemsTree.
 			while ((line = reader.readLine()) != null) {
 				stemsTree.addAll(uniqueStems(line, stemmer));
 			}
@@ -230,6 +232,7 @@ public class FileStemmer {
 			Stemmer stemmer = new SnowballStemmer(ENGLISH);
 			String line = null;
 
+			// Read a line from the reader and add it to the list.
 			while ((line = reader.readLine()) != null) {
 				list.add(uniqueStems(line, stemmer));
 			}
