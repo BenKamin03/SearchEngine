@@ -39,6 +39,15 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * Indents the writer on a new line by the specified number of times. Does
+	 * nothing if the
+	 * indentation level is 0 or less.
+	 *
+	 * @param writer the writer to use
+	 * @param indent the number of times to indent
+	 * @throws IOException if an IO error occurs
+	 */
 	public static void writeIndentOnNewLine(String element, Writer writer, int indent) throws IOException {
 		writer.write("\n");
 		writeIndent(element, writer, indent);
@@ -213,6 +222,18 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * Writes the line for an Object Array
+	 *
+	 * @param elements the elements to use
+	 * @param element  the element in the map
+	 * @param writer   the writer
+	 * @param indent   the indentation
+	 *
+	 * @see StringWriter
+	 * @see #writeQuote(Map, Writer, int)
+	 * @see #writeArray(Collection)
+	 */
 	public static void writeObjectArrayLine(Map<String, ? extends Collection<? extends Number>> elements,
 			Entry<String, ? extends Collection<? extends Number>> element, Writer writer, int indent)
 			throws IOException {
@@ -226,12 +247,12 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of map with any type
 	 * of nested collection of number objects.
 	 *
-	 * @param map the elements to write
-	 * @param writer   the writer to use
-	 * @param indent   the initial indent level; the first bracket is not indented,
-	 *                 inner elements are indented by one, and the last bracket is
-	 *                 indented at the
-	 *                 initial indentation level
+	 * @param map    the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *               inner elements are indented by one, and the last bracket is
+	 *               indented at the
+	 *               initial indentation level
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Writer#write(String)
@@ -294,6 +315,18 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * Writes the line for an Array Object
+	 *
+	 * @param elements the elements to use
+	 * @param element  the element in the map
+	 * @param writer   the writer
+	 * @param indent   the indentation
+	 *
+	 * @see StringWriter
+	 * @see #writeQuote(Map, Writer, int)
+	 * @see #writeObject(Collection)
+	 */
 	public static void writeArrayObjectsLine(Collection<? extends Map<String, ? extends Number>> elements,
 			Map<String, ? extends Number> element, Writer writer, int indent) throws IOException {
 		writeIndent(writer, indent + 1);
@@ -411,7 +444,20 @@ public class JsonWriter {
 		}
 	}
 
-	public static void writeObjectHashLine(Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer, int indent) throws IOException {
+	/**
+	 * Writes the line for an Object Hash
+	 *
+	 * @param element  the element in the map
+	 * @param writer   the writer
+	 * @param indent   the indentation
+	 *
+	 * @see StringWriter
+	 * @see #writeQuote(Map, Writer, int)
+	 * @see #writeObjectArrays(Collection)
+	 */
+	public static void writeObjectHashLine(
+			Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer,
+			int indent) throws IOException {
 		writeQuote(element.getKey(), writer, indent + 1);
 		writer.write(": ");
 		writeObjectArrays(element.getValue(), writer, indent + 1);
