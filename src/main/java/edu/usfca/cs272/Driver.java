@@ -90,8 +90,7 @@ public class Driver {
  * guide on the course website shows how to setup Eclipse to see the Javadoc
  * warnings. (Open the "View Screenshot" section.) Here is a direct link:
  * 
- * https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-
- * 4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
+ * https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
  * 
  * When conducting asynchronous reviews, I will no longer review code with major
  * formatting issues or warnings in it. Please do a complete pass of your code
