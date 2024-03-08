@@ -3,7 +3,6 @@ package edu.usfca.cs272.utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,7 +76,7 @@ public class InvertedIndex {
           counts.put(file, count);
      }
 
-     public void addQuery(String search, String file, String word) {
+     private void addQuery(String search, String file, String word) {
           List<QueryEntry> entries = query.get(search);
           if (entries != null) {
                for (QueryEntry entry : entries) {

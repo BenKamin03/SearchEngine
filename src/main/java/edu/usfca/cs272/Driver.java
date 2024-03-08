@@ -76,7 +76,7 @@ public class Driver {
 		InvertedIndex invertedIndex = new InvertedIndex();
 
 		try {
-			FileHandler fileHandler = new FileHandler(indexesPath, countsPath, invertedIndex);
+			FileHandler fileHandler = new FileHandler(invertedIndex);
 			fileHandler.fillInvertedIndex(text, invertedIndex);
 
 			if (indexesPath != null) {

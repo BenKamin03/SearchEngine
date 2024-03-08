@@ -14,7 +14,6 @@ import java.util.ArrayList;
  */
 public class FileHandler {
 
-     private Path indexesPath, countsPath;
      private InvertedIndex invertedIndex;
 
      /**
@@ -23,9 +22,7 @@ public class FileHandler {
       *
       * @param parser - the command line argument
       */
-     public FileHandler(Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
-          this.indexesPath = indexesPath;
-          this.countsPath = countsPath;
+     public FileHandler(InvertedIndex invertedIndex) {
           this.invertedIndex = invertedIndex;
      }
 
