@@ -44,15 +44,7 @@ public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry
 
      @Override
      public int compare(QueryEntry o1, QueryEntry o2) {
-          int comp = Double.compare(o1.getScore(), o2.getScore());
-          if (comp == 0) {
-               comp = Integer.compare(o1.getTotalWords(), o2.getTotalWords());
-               if (comp == 0) {
-                    comp = o2.getFile().compareToIgnoreCase(o1.getFile());
-               }
-          }
-          comp = (comp != 0 ? comp / Math.abs(comp) : 0); // comp => -1, 0, 1
-          return comp;
+          return Comparator.comparing(QueryEntry::getScore).thenComparingInt(QueryEntry::getTotalWords).thenComparing(QueryEntry::getFile, Comparator.reverseOrder()).compare(o1, o2);
      }
 
      @Override
