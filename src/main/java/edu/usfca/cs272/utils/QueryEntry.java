@@ -21,9 +21,9 @@ public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry
           return file;
      }
 
-     public void addQuery(String query, int size) {
+     public void addQuery(String query, int addAppliedWords) {
           if (!queries.contains(query)) {
-               appliedWords += size;
+               appliedWords += addAppliedWords;
                queries.add(query);
           }
      }
