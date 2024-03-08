@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -447,9 +449,9 @@ public class JsonWriter {
 	/**
 	 * Writes the line for an Object Hash
 	 *
-	 * @param element  the element in the map
-	 * @param writer   the writer
-	 * @param indent   the indentation
+	 * @param element the element in the map
+	 * @param writer  the writer
+	 * @param indent  the indentation
 	 *
 	 * @see StringWriter
 	 * @see #writeQuote(Map, Writer, int)
@@ -483,16 +485,6 @@ public class JsonWriter {
 	 */
 	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
 			Writer writer, int indent) throws IOException {
-		// writeIndent("{\n", writer, indent);
-		// var iterator = hash.entrySet().iterator();
-		// while (iterator.hasNext()) {
-		// var element = iterator.next();
-		// writeQuote(element.getKey(), writer, indent + 1);
-		// writer.write(": ");
-		// writeObjectArrays(element.getValue(), writer, indent + 1);
-		// writer.write(iterator.hasNext() ? ",\n" : "\n");
-		// }
-		// writeIndent("}", writer, indent);
 
 		var iterator = hash.entrySet().iterator();
 
@@ -508,6 +500,81 @@ public class JsonWriter {
 			}
 		}
 		writeIndentOnNewLine("}", writer, indent);
+	}
+
+	public static void writeMapCollectionObjectLine(Entry<String, ? extends Collection<? extends Object>> element,
+			Writer writer, int indent) throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": [");
+		writeCollectionObject(element.getValue(), writer, indent + 1);
+	}
+
+	public static void writeCollectionObjectLine(Object object, Writer writer, int indent) throws IOException {
+		writeIndent("{\n", writer, indent);
+		String str = object.toString();
+		for (String s : str.split("\n")) {
+			writeIndent(s, writer, indent + 1);
+			writer.write("\n");
+		} 
+		writeIndent("}", writer, indent);
+	}
+
+	public static void writeCollectionObject(Collection<? extends Object> elements, Writer writer, int indent)
+			throws IOException {
+		if (elements != null) {
+			var iterator = elements.iterator();
+			if (iterator != null) {
+				writer.write("");
+				if (iterator.hasNext()) {
+					var element = iterator.next();
+					writer.write("\n");
+					writeCollectionObjectLine(element, writer, indent + 1);
+					while (iterator.hasNext()) {
+						element = iterator.next();
+						writer.write(",\n");
+						writeCollectionObjectLine(element, writer, indent + 1);
+					}
+				}
+				writeIndentOnNewLine("]", writer, indent);
+			}
+		} else {
+			writeIndentOnNewLine("]", writer, indent);
+		}
+	}
+
+	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
+			Writer writer, int indent) throws IOException {
+		var iterator = elements.entrySet().iterator();
+
+		writer.write("{");
+		if (iterator.hasNext()) {
+			var element = iterator.next();
+			writer.write("\n");
+			writeMapCollectionObjectLine(element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeMapCollectionObjectLine(element, writer, indent);
+			}
+		}
+		writeIndentOnNewLine("}", writer, indent);
+	}
+
+	public static String writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements) {
+		try {
+			StringWriter writer = new StringWriter();
+			writeMapCollectionObject(elements, writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
+			Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeMapCollectionObject(elements, writer, 0);
+		}
 	}
 
 	/** Prevent instantiating this class of static methods. */

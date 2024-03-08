@@ -29,15 +29,15 @@ public class FileHandler {
           this.invertedIndex = invertedIndex;
      }
 
-     
      /**
-     * Fills the inverted index with the contents of the file. 
-     * 
-     * @param textPath - Path to the text file to be hashed
-     * @param invertedIndex - Inverted index to be
-     */
+      * Fills the inverted index with the contents of the file.
+      * 
+      * @param textPath      - Path to the text file to be hashed
+      * @param invertedIndex - Inverted index to be
+      */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
-          fillHash(textPath, true);
+          if (textPath != null)
+               fillHash(textPath, true);
      }
 
      /**
@@ -74,36 +74,40 @@ public class FileHandler {
      }
 
      /**
-     * Adds a file to the index. This is called by the IndexWriter when it detects a stem file that is to be added to the index
-     * 
-     * @param file - the path to the
-     */
+      * Adds a file to the index. This is called by the IndexWriter when it detects a
+      * stem file that is to be added to the index
+      * 
+      * @param file - the path to the
+      */
      public void handleFile(Path file) throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(file);
           if (stems.size() > 0) {
                // Add the index to the inverted index.
-               if (indexesPath != null) {
+               
                     int i = 1;
                     for (String stem : stems) {
                          invertedIndex.addIndex(stem, file.toString(), i++);
                     }
-               }
+               
 
                // Add the count to the inverted index.
-               if (countsPath != null) {
+               
                     invertedIndex.addCount(file.toString(), stems.size());
-               }
+               
           }
      }
 
      /**
-     * Filters a path to see if it ends with one of the given extensions. This is used to avoid file names that are inappropriate for the user's file system.
-     * 
-     * @param p - The path to check. Must not be null.
-     * @param extensions - An array of extensions. May be null.
-     * 
-     * @return true if the path ends with one of the given extensions false otherwise. Note that it is possible for this method to return false even if the path doesn't have a file
-     */
+      * Filters a path to see if it ends with one of the given extensions. This is
+      * used to avoid file names that are inappropriate for the user's file system.
+      * 
+      * @param p          - The path to check. Must not be null.
+      * @param extensions - An array of extensions. May be null.
+      * 
+      * @return true if the path ends with one of the given extensions false
+      *         otherwise. Note that it is possible for this method to return false
+      *         even if the path doesn't have a file
+      */
      public static boolean fileExtensionFilter(Path p, String[] extensions) {
           String lower = p.getFileName().toString().toLowerCase();
           for (String ext : extensions) {
