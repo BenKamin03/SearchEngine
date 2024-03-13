@@ -13,15 +13,29 @@ import java.util.ArrayList;
  * @version Spring 2024
  */
 public class FileHandler {
-
-     private Path indexesPath, countsPath;
+	
+	
+     /**
+     * Private Path indexesPath
+     */
+    private Path indexesPath;
+    
+    /**
+     * Private Path countsPath
+     */
+    private Path countsPath;
+    
+    /**
+     * Private InvertedIndex invertedIndex
+     */
      private InvertedIndex invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-      *
-      * @param parser - the command line argument
+     * @param indexesPath 
+     * @param countsPath 
+     * @param invertedIndex 
       */
      public FileHandler(Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
           this.indexesPath = indexesPath;
@@ -35,6 +49,7 @@ public class FileHandler {
      * 
      * @param textPath - Path to the text file to be hashed
      * @param invertedIndex - Inverted index to be
+     * @throws IOException 
      */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
           fillHash(textPath, true);
@@ -43,10 +58,10 @@ public class FileHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
+     * @param input 
+     * @param requireText 
       *
-      * @param hash        - Map to fill with stems
-      * @param p           - Path to file or directory to process ( recursive )
-      * @param isDirectory - True if Path is a directory false if it's a file
+     * @throws IOException 
       */
      public void fillHash(Path input, boolean requireText) throws IOException {
           /*
@@ -77,6 +92,7 @@ public class FileHandler {
      * Adds a file to the index. This is called by the IndexWriter when it detects a stem file that is to be added to the index
      * 
      * @param file - the path to the
+     * @throws IOException 
      */
      public void handleFile(Path file) throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(file);

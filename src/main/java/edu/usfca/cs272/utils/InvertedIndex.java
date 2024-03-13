@@ -15,10 +15,20 @@ import java.util.TreeSet;
  */
 public class InvertedIndex {
 
+	/**
+	 * private final indexes
+	 */
      private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
+     
+     /**
+      * private final counts
+      */
      private final TreeMap<String, Integer> counts;
 
-     public InvertedIndex() {
+     /**
+     * InvertedIndex Constructor
+     */
+    public InvertedIndex() {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
