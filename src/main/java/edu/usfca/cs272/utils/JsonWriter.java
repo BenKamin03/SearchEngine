@@ -44,7 +44,7 @@ public class JsonWriter {
 	 * nothing if the
 	 * indentation level is 0 or less.
 	 * 
-	 * @param element 
+	 * @param element the element to add 
 	 * @param writer the writer to use
 	 * @param indent the number of times to indent
 	 * @throws IOException if an IO error occurs
@@ -150,8 +150,8 @@ public class JsonWriter {
 	}
 
 	/**
-	 * @param a
-	 * @param b
+	 * @param a the variable name
+	 * @param b the variable value
 	 * @return the line for an object
 	 */
 	public static String getObjectLine(String a, String b) {
@@ -235,7 +235,7 @@ public class JsonWriter {
 	 * @param element  the element in the map
 	 * @param writer   the writer
 	 * @param indent   the indentation
-	 * @throws IOException 
+	 * @throws IOException an IO exception 
 	 *
 	 * @see StringWriter
 	 */
@@ -327,7 +327,7 @@ public class JsonWriter {
 	 * @param element  the element in the map
 	 * @param writer   the writer
 	 * @param indent   the indentation
-	 * @throws IOException 
+	 * @throws IOException an IO exception 
 	 *
 	 * @see StringWriter
 	 */
@@ -413,7 +413,7 @@ public class JsonWriter {
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 * 
-	 * @param hash 
+	 * @param hash the hash 
 	 * @param path     the file path to use
 	 * @throws IOException if an IO error occurs
 	 *
@@ -454,7 +454,7 @@ public class JsonWriter {
 	 * @param element  the element in the map
 	 * @param writer   the writer
 	 * @param indent   the indentation
-	 * @throws IOException 
+	 * @throws IOException an IO exception 
 	 *
 	 * @see StringWriter
 	 */
@@ -471,7 +471,7 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of collection with
 	 * any type of nested map of String keys to number objects.
 	 * 
-	 * @param hash 
+	 * @param hash the hash 
 	 * @param writer   the writer to use
 	 * @param indent   the initial indent level; the first bracket is not indented,
 	 *                 inner elements are indented by one, and the last bracket is

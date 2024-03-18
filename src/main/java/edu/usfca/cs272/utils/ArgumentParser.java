@@ -162,8 +162,8 @@ public class ArgumentParser {
 	}
 
 	/**
-	 * @param flag
-	 * @param backup
+	 * @param flag the flag to search for
+	 * @param backup the backup path
 	 * @return the path if the flag exists
 	 */
 	public Path getPathIfFlag(String flag, Path backup) {
