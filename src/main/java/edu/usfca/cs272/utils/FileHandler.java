@@ -13,6 +13,7 @@ import java.util.ArrayList;
  * @version Spring 2024
  */
 public class FileHandler {
+
 	
 	
      /**
@@ -28,7 +29,6 @@ public class FileHandler {
     /**
      * Private InvertedIndex invertedIndex
      */
-     private InvertedIndex invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
@@ -37,13 +37,10 @@ public class FileHandler {
      * @param countsPath the counts path
      * @param invertedIndex the invertedIndex
       */
-     public FileHandler(Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
-          this.indexesPath = indexesPath;
-          this.countsPath = countsPath;
+     public FileHandler(InvertedIndex invertedIndex) {
           this.invertedIndex = invertedIndex;
      }
 
-     
      /**
      * Fills the inverted index with the contents of the file. 
      * 
@@ -52,7 +49,8 @@ public class FileHandler {
      * @throws IOException a file IO exception
      */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
-          fillHash(textPath, true);
+          if (textPath != null)
+               fillHash(textPath, true);
      }
 
      /**
@@ -94,32 +92,36 @@ public class FileHandler {
      * @param file - the path to the
      * @throws IOException an IO exception 
      */
+
      public void handleFile(Path file) throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(file);
           if (stems.size() > 0) {
                // Add the index to the inverted index.
-               if (indexesPath != null) {
+               
                     int i = 1;
                     for (String stem : stems) {
                          invertedIndex.addIndex(stem, file.toString(), i++);
                     }
-               }
+               
 
                // Add the count to the inverted index.
-               if (countsPath != null) {
+               
                     invertedIndex.addCount(file.toString(), stems.size());
-               }
+               
           }
      }
 
      /**
-     * Filters a path to see if it ends with one of the given extensions. This is used to avoid file names that are inappropriate for the user's file system.
-     * 
-     * @param p - The path to check. Must not be null.
-     * @param extensions - An array of extensions. May be null.
-     * 
-     * @return true if the path ends with one of the given extensions false otherwise. Note that it is possible for this method to return false even if the path doesn't have a file
-     */
+      * Filters a path to see if it ends with one of the given extensions. This is
+      * used to avoid file names that are inappropriate for the user's file system.
+      * 
+      * @param p          - The path to check. Must not be null.
+      * @param extensions - An array of extensions. May be null.
+      * 
+      * @return true if the path ends with one of the given extensions false
+      *         otherwise. Note that it is possible for this method to return false
+      *         even if the path doesn't have a file
+      */
      public static boolean fileExtensionFilter(Path p, String[] extensions) {
           String lower = p.getFileName().toString().toLowerCase();
           for (String ext : extensions) {
