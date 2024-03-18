@@ -21,12 +21,10 @@ public class InvertedIndex {
 
      private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
      private final TreeMap<String, Integer> counts;
-     private final TreeMap<String, List<QueryEntry>> query;
 
      public InvertedIndex() {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
-          query = new TreeMap<>();
      }
 
      /**
@@ -49,9 +47,6 @@ public class InvertedIndex {
           return counts;
      }
 
-     public Map<String, List<QueryEntry>> getQuery() {
-          return query;
-     }
 
      /**
       * Adds an index to the index map. This is used to determine which words are in
@@ -74,76 +69,6 @@ public class InvertedIndex {
       */
      public void addCount(String file, int count) {
           counts.put(file, count);
-     }
-
-     private void addQuery(String search, String file, String word) {
-          List<QueryEntry> entries = query.get(search);
-          if (entries != null) {
-               for (QueryEntry entry : entries) {
-                    if (entry.getFile().equals(file)) {
-                         addQuery(entry, word, file);
-                         return;
-                    }
-               }
-
-               QueryEntry newEntry = new QueryEntry(file, getCountsInFile(file));
-               addQuery(newEntry, word, file);
-               entries.add(newEntry);
-
-          } else {
-               entries = new ArrayList<>();
-               QueryEntry newEntry = new QueryEntry(file, getCountsInFile(file));
-               addQuery(newEntry, word, file);
-               entries.add(newEntry);
-               query.put(search, entries);
-          }
-     }
-
-     private void addQuery(QueryEntry entry, String word, String file) {
-          int size = 0;
-          TreeMap<String, TreeSet<Integer>> wordIndex = indexes.get(word);
-          if (wordIndex != null) {
-               TreeSet<Integer> wordIndexInFile = wordIndex.get(file);
-               if (wordIndexInFile != null) {
-                    size = wordIndexInFile.size();
-               }
-          }
-          entry.addQuery(word, size);
-     }
-
-     public void addQuery(TreeSet<String> search, String file) {
-          for (String word : search) {
-               addQuery(getSearchFromWords(search), file, word);
-          }
-     }
-
-     public void addQuery(TreeSet<String> search) {
-          List<QueryEntry> entries = query.get(getSearchFromWords(search));
-          query.put(getSearchFromWords(search), entries);
-     }
-
-     public static String getSearchFromWords(TreeSet<String> words) {
-          StringBuilder builder = new StringBuilder();
-          var iterator = words.iterator();
-          if (iterator.hasNext()) {
-               builder.append(iterator.next());
-               while (iterator.hasNext()) {
-                    builder.append(" ");
-                    builder.append(iterator.next());
-               }
-          }
-          return builder.toString();
-     }
-
-     public void sortQuery() {
-          if (query != null && query.keySet() != null) {
-               var iterator = query.keySet().iterator();
-               while (iterator.hasNext()) {
-                    List<QueryEntry> list = query.get(iterator.next());
-                    if (list != null)
-                         Collections.sort(list);
-               }
-          }
      }
 
      /**

@@ -63,15 +63,11 @@ public class Driver {
 
 		Path text = parser.getPath("-text");
 
-		Path countsPath = null, indexesPath = null, queryPath = null, resultsPath = null;
+		Path countsPath = null, indexesPath = null;
 		if (parser.hasFlag("-counts"))
 			countsPath = parser.getPath("-counts", Path.of("counts.json"));
 		if (parser.hasFlag("-index"))
 			indexesPath = parser.getPath("-index", Path.of("index.json"));
-		if (parser.hasFlag("-query"))
-			queryPath = parser.getPath("-query");
-		if (parser.hasFlag("-results"))
-			resultsPath = parser.getPath("-results", Path.of("results.json"));
 
 		InvertedIndex invertedIndex = new InvertedIndex();
 
@@ -84,36 +80,6 @@ public class Driver {
 			}
 			if (countsPath != null) {
 				JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
-			}
-
-			if (queryPath != null) {
-
-				try (BufferedReader reader = Files.newBufferedReader(queryPath, StandardCharsets.UTF_8);) {
-					String line = null;
-
-					while ((line = reader.readLine()) != null) {
-						TreeSet<String> searchStems = FileStemmer.uniqueStems(line);
-
-						for (String stem : searchStems) {
-							TreeMap<String, TreeSet<Integer>> indexesOfWord = invertedIndex.getIndexes()
-									.get(stem);
-							if (indexesOfWord != null) {
-								var iterator = indexesOfWord.keySet().iterator();
-								while (iterator.hasNext()) {
-									String file = iterator.next();
-									invertedIndex.addQuery(searchStems, file);
-								}
-							} else {
-								invertedIndex.addQuery(searchStems);
-							}
-						}
-					}
-
-				}
-			}
-			if (resultsPath != null) {
-				invertedIndex.sortQuery();
-				JsonWriter.writeMapCollectionObject(invertedIndex.getQuery(), resultsPath);
 			}
 		} catch (IOException ex) {
 			System.out.println("Missing input file.");
