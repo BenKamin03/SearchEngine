@@ -43,9 +43,10 @@ public class JsonWriter {
 	 * Indents the writer on a new line by the specified number of times. Does
 	 * nothing if the
 	 * indentation level is 0 or less.
-	 *
-	 * @param writer the writer to use
-	 * @param indent the number of times to indent
+	 * 
+	 * @param element the element
+	 * @param writer  the writer to use
+	 * @param indent  the number of times to indent
 	 * @throws IOException if an IO error occurs
 	 */
 	public static void writeIndentOnNewLine(String element, Writer writer, int indent) throws IOException {
@@ -148,6 +149,13 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * returns a formatted line for an object
+	 * 
+	 * @param a the variable name
+	 * @param b the variable value
+	 * @return a formatted line for an object
+	 */
 	public static String getObjectLine(String a, String b) {
 		return "\"" + a + "\": " + b;
 	}
@@ -229,10 +237,7 @@ public class JsonWriter {
 	 * @param element  the element in the map
 	 * @param writer   the writer
 	 * @param indent   the indentation
-	 *
-	 * @see StringWriter
-	 * @see #writeQuote(Map, Writer, int)
-	 * @see #writeArray(Collection)
+	 * @throws IOException an IO exception
 	 */
 	public static void writeObjectArrayLine(Map<String, ? extends Collection<? extends Number>> elements,
 			Entry<String, ? extends Collection<? extends Number>> element, Writer writer, int indent)
@@ -322,10 +327,7 @@ public class JsonWriter {
 	 * @param element  the element in the map
 	 * @param writer   the writer
 	 * @param indent   the indentation
-	 *
-	 * @see StringWriter
-	 * @see #writeQuote(Map, Writer, int)
-	 * @see #writeObject(Collection)
+	 * @throws IOException an IO exception
 	 */
 	public static void writeArrayObjectsLine(Collection<? extends Map<String, ? extends Number>> elements,
 			Map<String, ? extends Number> element, Writer writer, int indent) throws IOException {
@@ -408,9 +410,9 @@ public class JsonWriter {
 
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
-	 *
-	 * @param elements the elements to write
-	 * @param path     the file path to use
+	 * 
+	 * @param hash the hash
+	 * @param path the file path to use
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
@@ -450,10 +452,7 @@ public class JsonWriter {
 	 * @param element the element in the map
 	 * @param writer  the writer
 	 * @param indent  the indentation
-	 *
-	 * @see StringWriter
-	 * @see #writeQuote(Map, Writer, int)
-	 * @see #writeObjectArrays(Collection)
+	 * @throws IOException an IO exception
 	 */
 	public static void writeObjectHashLine(
 			Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer,
@@ -468,12 +467,12 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of collection with
 	 * any type of nested map of String keys to number objects.
 	 *
-	 * @param elements the elements to write
-	 * @param writer   the writer to use
-	 * @param indent   the initial indent level; the first bracket is not indented,
-	 *                 inner elements are indented by one, and the last bracket is
-	 *                 indented at the
-	 *                 initial indentation level
+	 * @param hash   the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *               inner elements are indented by one, and the last bracket is
+	 *               indented at the
+	 *               initial indentation level
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Writer#write(String)
@@ -500,6 +499,14 @@ public class JsonWriter {
 		writeIndentOnNewLine("}", writer, indent);
 	}
 
+	/**
+	 * writes a map collection object line
+	 * 
+	 * @param element the element
+	 * @param writer  the writer
+	 * @param indent  the amount of indents
+	 * @throws IOException the IO exception
+	 */
 	public static void writeMapCollectionObjectLine(Entry<String, ? extends Collection<? extends Object>> element,
 			Writer writer, int indent) throws IOException {
 		writeQuote(element.getKey(), writer, indent + 1);
@@ -507,16 +514,32 @@ public class JsonWriter {
 		writeCollectionObject(element.getValue(), writer, indent + 1);
 	}
 
+	/**
+	 * writes a collection object line
+	 * 
+	 * @param object the object
+	 * @param writer the writer
+	 * @param indent the amount of indents
+	 * @throws IOException the IO exception
+	 */
 	public static void writeCollectionObjectLine(Object object, Writer writer, int indent) throws IOException {
 		writeIndent("{\n", writer, indent);
 		String str = object.toString();
 		for (String s : str.split("\n")) {
 			writeIndent(s, writer, indent + 1);
 			writer.write("\n");
-		} 
+		}
 		writeIndent("}", writer, indent);
 	}
 
+	/**
+	 * writes the collection object
+	 * 
+	 * @param elements the elements
+	 * @param writer   the writer
+	 * @param indent   the amount of indents
+	 * @throws IOException the IO exception
+	 */
 	public static void writeCollectionObject(Collection<? extends Object> elements, Writer writer, int indent)
 			throws IOException {
 		if (elements != null) {
@@ -540,6 +563,14 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * writes a map collection object
+	 * 
+	 * @param elements the elements
+	 * @param writer   the writer
+	 * @param indent   the amount of indents
+	 * @throws IOException the IO exception
+	 */
 	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
 			Writer writer, int indent) throws IOException {
 		var iterator = elements.entrySet().iterator();
@@ -558,6 +589,12 @@ public class JsonWriter {
 		writeIndentOnNewLine("}", writer, indent);
 	}
 
+	/**
+	 * writes the map collection object
+	 * 
+	 * @param elements the elements
+	 * @return the created string
+	 */
 	public static String writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements) {
 		try {
 			StringWriter writer = new StringWriter();
@@ -568,6 +605,13 @@ public class JsonWriter {
 		}
 	}
 
+	/**
+	 * writes the map collection object
+	 * 
+	 * @param elements the elements
+	 * @param path     the output path
+	 * @throws IOException the IO exception
+	 */
 	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
 			Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {

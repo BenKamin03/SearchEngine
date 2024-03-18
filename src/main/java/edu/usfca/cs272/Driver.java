@@ -1,21 +1,15 @@
 package edu.usfca.cs272;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
-import edu.usfca.cs272.utils.FileStemmer;
 import edu.usfca.cs272.utils.InvertedIndex;
 import edu.usfca.cs272.utils.JsonWriter;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Class responsible for running this project based on the provided command-line

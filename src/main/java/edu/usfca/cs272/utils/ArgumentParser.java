@@ -161,6 +161,13 @@ public class ArgumentParser {
 				: backup;
 	}
 
+	/**
+	 * Gets the path if the flag exists
+	 * 
+	 * @param flag the flag to search for
+	 * @param backup the backup path
+	 * @return the path
+	 */
 	public Path getPathIfFlag(String flag, Path backup) {
 		return (hasFlag(flag) ? (getString(flag) != null ? Path.of(getString(flag)) : backup) : null);
 	}
