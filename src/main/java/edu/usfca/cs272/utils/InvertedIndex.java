@@ -19,21 +19,11 @@ import java.util.TreeMap;
  */
 public class InvertedIndex {
 
-	/**
-	 * private final indexes
-	 */
      private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
-     
-     /**
-      * private final counts
-      */
      private final TreeMap<String, Integer> counts;
      private final TreeMap<String, List<QueryEntry>> query;
 
-     /**
-     * InvertedIndex Constructor
-     */
-    public InvertedIndex() {
+     public InvertedIndex() {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
           query = new TreeMap<>();
