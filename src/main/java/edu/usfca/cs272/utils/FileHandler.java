@@ -14,24 +14,40 @@ import java.util.ArrayList;
  */
 public class FileHandler {
 
-     private InvertedIndex invertedIndex;
+	
+	
+     /**
+     * Private Path indexesPath
+     */
+    private Path indexesPath;
+    
+    /**
+     * Private Path countsPath
+     */
+    private Path countsPath;
+    
+    /**
+     * Private InvertedIndex invertedIndex
+     */
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-      *
-      * @param parser - the command line argument
+     * @param indexesPath the indexes path
+     * @param countsPath the counts path
+     * @param invertedIndex the invertedIndex
       */
      public FileHandler(InvertedIndex invertedIndex) {
           this.invertedIndex = invertedIndex;
      }
 
      /**
-      * Fills the inverted index with the contents of the file.
-      * 
-      * @param textPath      - Path to the text file to be hashed
-      * @param invertedIndex - Inverted index to be
-      */
+     * Fills the inverted index with the contents of the file. 
+     * 
+     * @param textPath - Path to the text file to be hashed
+     * @param invertedIndex - Inverted index to be
+     * @throws IOException a file IO exception
+     */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
           if (textPath != null)
                fillHash(textPath, true);
@@ -40,10 +56,10 @@ public class FileHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
+     * @param input the input path 
+     * @param requireText boolean used to see if it should only search for .text/.txt files
       *
-      * @param hash        - Map to fill with stems
-      * @param p           - Path to file or directory to process ( recursive )
-      * @param isDirectory - True if Path is a directory false if it's a file
+     * @throws IOException an IO exception 
       */
      public void fillHash(Path input, boolean requireText) throws IOException {
           /*
@@ -71,11 +87,12 @@ public class FileHandler {
      }
 
      /**
-      * Adds a file to the index. This is called by the IndexWriter when it detects a
-      * stem file that is to be added to the index
-      * 
-      * @param file - the path to the
-      */
+     * Adds a file to the index. This is called by the IndexWriter when it detects a stem file that is to be added to the index
+     * 
+     * @param file - the path to the
+     * @throws IOException an IO exception 
+     */
+
      public void handleFile(Path file) throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(file);
           if (stems.size() > 0) {
