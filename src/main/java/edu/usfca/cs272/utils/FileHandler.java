@@ -33,9 +33,9 @@ public class FileHandler {
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-     * @param indexesPath 
-     * @param countsPath 
-     * @param invertedIndex 
+     * @param indexesPath the indexes path
+     * @param countsPath the counts path
+     * @param invertedIndex the invertedIndex
       */
      public FileHandler(Path indexesPath, Path countsPath, InvertedIndex invertedIndex) {
           this.indexesPath = indexesPath;
@@ -49,7 +49,7 @@ public class FileHandler {
      * 
      * @param textPath - Path to the text file to be hashed
      * @param invertedIndex - Inverted index to be
-     * @throws IOException 
+     * @throws IOException a file IO exception
      */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
           fillHash(textPath, true);
@@ -58,10 +58,10 @@ public class FileHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
-     * @param input 
-     * @param requireText 
+     * @param input the input path 
+     * @param requireText boolean used to see if it should only search for .text/.txt files
       *
-     * @throws IOException 
+     * @throws IOException an IO exception 
       */
      public void fillHash(Path input, boolean requireText) throws IOException {
           /*
@@ -92,7 +92,7 @@ public class FileHandler {
      * Adds a file to the index. This is called by the IndexWriter when it detects a stem file that is to be added to the index
      * 
      * @param file - the path to the
-     * @throws IOException 
+     * @throws IOException an IO exception 
      */
      public void handleFile(Path file) throws IOException {
           ArrayList<String> stems = FileStemmer.listStems(file);
