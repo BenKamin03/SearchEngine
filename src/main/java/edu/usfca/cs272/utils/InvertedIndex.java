@@ -36,6 +36,12 @@ public class InvertedIndex {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
+    
+			/*
+			 * TODO The get methods here are breaking encapsulation. It is now time to fix
+			 * this problem. The PrefixMap example from the lectures illustrates how to fix
+			 * this problem efficiently.
+			 */
 
      /**
       * Returns the indexes
@@ -45,6 +51,16 @@ public class InvertedIndex {
       */
      public TreeMap<String, TreeMap<String, TreeSet<Integer>>> getIndexes() {
           return indexes;
+          
+					/*
+					 * TODO You need this get method that breaks encapsulation to write the data to
+					 * a JSON file. Why you break encapsulation is a clue to how to fix the design.
+					 * It usually means the class is missing functionality. In this case, think of
+					 * writing to JSON more like a get method. It needs to "get" all of the data,
+					 * but it just does it to a file instead of in memory. Where do get methods go?
+					 * In the data structure! So you need a writeIndex(...) method in here that
+					 * calls your JsonWriter method.
+					 */
      }
 
      /**
@@ -78,6 +94,7 @@ public class InvertedIndex {
       * @param count - The number of times the item is
       */
      public void addCount(String file, int count) {
+    	 // TODO Only put if count > 0
           counts.put(file, count);
      }
 
@@ -102,6 +119,13 @@ public class InvertedIndex {
       * @return an immutable map of indexes
       */
      public Map<String, TreeMap<String, TreeSet<Integer>>> getCopyOfIndexes() {
+				/*
+				 * TODO This get method is breaking encapsulation. Do you understand why? The
+				 * PrefixMap example illustrates what happens when you have nested mutable data.
+				 * 
+				 * It is also inefficient. You do not need any copy methods in the index.
+				 */
+
           return Collections.unmodifiableMap(indexes);
      }
 
@@ -111,7 +135,7 @@ public class InvertedIndex {
       * 
       * @return an immutable copy of the counts
       */
-     public Map<String, Integer> getCopyOfCounts() {
+     public Map<String, Integer> getCopyOfCounts() { // TODO Also remove
           return Collections.unmodifiableMap(counts);
      }
 
@@ -121,7 +145,7 @@ public class InvertedIndex {
       * 
       * @return a set of all indexes
       */
-     public Set<String> getIndexKeys() {
+     public Set<String> getIndexKeys() { // TODO Breaking encapsulation
           return indexes.keySet();
      }
 
@@ -131,7 +155,7 @@ public class InvertedIndex {
       * 
       * @return the keys of the counts
       */
-     public Set<String> getCountsKeys() {
+     public Set<String> getCountsKeys() { // TODO Breaking encapsulation
           return counts.keySet();
      }
 
@@ -141,7 +165,7 @@ public class InvertedIndex {
       * 
       * @return an iterator over the words of all indexes
       */
-     public Iterator<String> getIndexIterator() {
+     public Iterator<String> getIndexIterator() { // TODO What are you using as a basis for which methods to include? There is a reason none of the examples I gave have a method like this... it can actually result in modification to your provide data and break encapsulation! 
           return indexes.keySet().iterator();
      }
 
@@ -152,7 +176,7 @@ public class InvertedIndex {
       * @return an iterator over the names of all the counts
       */
      public Iterator<String> getCountsIterator() {
-          return counts.keySet().iterator();
+          return counts.keySet().iterator(); // TODO Same issue
      }
 
      /**
@@ -164,7 +188,7 @@ public class InvertedIndex {
       *         index table
       */
      public TreeMap<String, TreeSet<Integer>> getIndexesOfWord(String word) {
-          return indexes.get(word);
+          return indexes.get(word); // TODO Also breaks encapsulation
      }
 
      /**
@@ -190,6 +214,8 @@ public class InvertedIndex {
      public boolean countsHasFile(String file) {
           return counts.containsKey(file);
      }
+     
+     // TODO Group the has methods together. I think you are missing one.
 
      /**
       * Returns the set of indexes of a word in a location.
@@ -200,7 +226,7 @@ public class InvertedIndex {
       * @return the set of indexes of the word in the location or null if not found
       *         in the index set ( in which case the set is empty )
       */
-     public TreeSet<Integer> getIndexesOfWordInLocation(String word, String location) {
+     public TreeSet<Integer> getIndexesOfWordInLocation(String word, String location) { // TODO Breaking encapsulation
           return indexes.get(word).get(location);
      }
 
@@ -216,7 +242,7 @@ public class InvertedIndex {
       *         the word is not found
       */
      public TreeSet<Integer> getIndexesOfWordInLocationWithBackup(String word, String location,
-               TreeSet<Integer> backup) {
+               TreeSet<Integer> backup) { // TODO Hmmm, why a backup? How do you anticipate this one being used?
           return (indexesHasWordInLocation(word, location) ? getIndexesOfWordInLocation(word, location) : backup);
      }
 
@@ -231,6 +257,17 @@ public class InvertedIndex {
       */
      public boolean indexesHasWordInLocation(String word, String location) {
           return (indexesHasWord(word) ? indexes.get(word).containsKey(location) : false);
+          
+					/*
+					 * TODO Improve efficiency to avoid re-accessing the same data within the tree
+					 * data structure more times than necessary -or- to avoid creating unnecessary
+					 * empty instances every time this method is called that eventually need to be
+					 * cleaned up by the garbage collector. An example class from lecture that tries
+					 * to do this is linked below.
+					 */
+
+					// TODO See: https://github.com/usf-cs272-spring2024/cs272-lectures/blob/main/src/main/java/edu/usfca/cs272/lectures/inheritance/word/WordPrefix.java
+
      }
 
      /**
@@ -243,4 +280,39 @@ public class InvertedIndex {
      public Integer getCountsInFile(String file) {
           return counts.get(file);
      }
+     
+			/*
+			 * TODO This class is still missing some methods.
+			 * 
+			 * The first set of methods make sure the data stored in this class is safely
+			 * accessible (without any looping required). Those are get/view methods,
+			 * has/contains methods, and num/size methods (choose a naming scheme and stick
+			 * to it).
+			 * 
+			 * For example, FileIndex has two "has" methods because there are two pieces of
+			 * information stored within that data structure class (the locations and the
+			 * words for a location). What does that mean for this class, which is storing
+			 * more information? I would expect to see:
+			 * 
+			 * hasWord(String word) → does the inverted index have this word?
+			 * 
+			 * hasLocation(String word, String location) → does the inverted index have this
+			 * location for this word?
+			 * 
+			 * hasPosition(String word, String location, Integer position) → does the
+			 * inverted index have this position for the given location and word?
+			 * 
+			 * hasCount(String location) → does the word counts map have a count for this
+			 * location?
+			 * 
+			 * There are usually the same number of get, has, and num methods. Then think
+			 * about other methods, like toString, addAll, and write methods, to also
+			 * include.
+			 */
+
+			/*
+			 * TODO I recommend you stop by office hours to discuss some of these comments.
+			 * It might be good to have a longer synchronous discussion around get methods
+			 * and not breaking encapsulation.
+			 */
 }
