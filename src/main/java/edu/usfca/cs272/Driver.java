@@ -79,4 +79,38 @@ public class Driver {
 			System.out.println("Missing input file.");
 		}
 	}
+	
+	/*
+	 * TODO Fix the Javadoc warnings in the code.
+	 * 
+	 * Other developers will *not* use poorly unprofessionally documented code
+	 * regardless of whether the code itself is well designed! It is a tedious but
+	 * critical step to the final steps of refactoring. The "Configuring Eclipse"
+	 * guide on the course website shows how to setup Eclipse to see the Javadoc
+	 * warnings. (Open the "View Screenshot" section.)
+	 * 
+	 * As announced in class, when conducting asynchronous reviews, I will no longer
+	 * review code with warnings or major formatting issues in it. That is a sign
+	 * you still need to do a cleanup pass of your code. Please do a complete pass
+	 * of your code for these issues before requesting code review. See the
+	 * "Project Review" guide for details.
+	 * 
+	 * For reference, direct links to the guides and the warnings found are included
+	 * below.
+	 */
+
+	// Configuring Eclipse: https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
+	// Project Review: https://usf-cs272-spring2024.notion.site/Project-Review-c04d5128395a4eb499e30f6fbd0c0352
+	
+	/*-
+Description	Resource	Path	Location	Type
+The import java.util.ArrayList is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 3	Java Problem
+The import java.util.List is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 6	Java Problem
+	 */
+	
+	/*
+	 * TODO I will still review this since they are easy to fix warnings and the last
+	 * review was delayed due to the merge conflicts, but it will be the last time I'll
+	 * move forward with a review when there are warnings in the code!
+	 */
 }
