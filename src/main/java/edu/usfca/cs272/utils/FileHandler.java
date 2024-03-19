@@ -18,7 +18,7 @@ public class FileHandler {
      /**
      * private InvertedIndex
      */
-    private InvertedIndex invertedIndex;
+    private InvertedIndex invertedIndex; // TODO Add either final -or- static... which one makes sense here?
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
@@ -69,7 +69,7 @@ public class FileHandler {
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
                     handleFile(input);
                }
-               return;
+               return; // TODO Remove, not needed
           }
      }
 
@@ -81,8 +81,36 @@ public class FileHandler {
      * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
+				/*
+				 * TODO Fantastic implementation! But, it is now time to make this more
+				 * efficient.
+				 * 
+				 * You should always start with reusing as much code as possible to get the
+				 * initial functionality working. This implementation is perfect for that!
+				 * 
+				 * When refactoring, we then consider whether it makes sense to reduce code
+				 * reuse to improve efficiency. The answer depends on the class. A class like
+				 * FileStemmer is very general, and so it might be more important there to use
+				 * the most general approach (more code reuse) over the most efficient approach
+				 * (less code reuse) everywhere. However, this class solves a more specific
+				 * problem. In the more specific classes, we tend to choose efficiency over
+				 * generalization (and code reuse).
+				 * 
+				 * Here, the use of a *temporary* list to hold the stemmed words causes more
+				 * looping through the words than necessary. You loop once to copy words from
+				 * the file into a list, then loop through that list again to move those words
+				 * into the index. The list ends up being temporary storage, which can often be
+				 * eliminated.
+				 * 
+				 * To fix this, copy/paste logic from the stemmer class and customize to add
+				 * directly to the inverted index instead of to a list first. Use a buffered
+				 * line-by-line approach. The parse method will still be helpful here, and you
+				 * will need the FileStemmer class for future projects as well so do not get rid
+				 * of it.
+				 */
+
           ArrayList<String> stems = FileStemmer.listStems(file);
-          if (stems.size() > 0) {
+          if (stems.size() > 0) { // TODO Fix formatting, indentation is inconsistent below
                // Add the index to the inverted index.
                
                     int i = 1;
