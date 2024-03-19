@@ -54,7 +54,20 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser();
 
 		parser.parse(args);
+		
+		/*
+		 * TODO Just do:
+		 * 
+		 * ArgumentParser parser = new ArgumentParser(args);
+		 */
 
+		/*
+		 * TODO Do not create these variables here. Declare and define them in the scope
+		 * they are needed. There will be too many flag/value pairs to keep this approach
+		 * of declaring all the variables you want to use at the start of code. 
+		 * 
+		 * What happened to: https://github.com/usf-cs272-spring2024/project-BenKamin03/blob/64a28313df7134830b3c159e5a2a01f519567065/src/main/java/edu/usfca/cs272/Driver.java#L62-L72
+		 */
 		Path text = parser.getPath("-text");
 
 		Path countsPath = null, indexesPath = null;
@@ -76,9 +89,41 @@ public class Driver {
 				JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
 			}
 		} catch (IOException ex) {
+			/*
+			 * TODO This exception can also happen when writing to file, so this is not
+			 * a good way to handle exceptions here.
+			 */
+		
 			System.out.println("Missing input file.");
 		}
 	}
+	
+	/*
+	TODO Try this for Driver.main:
+	
+	Create the argument parser
+	Create the empty inverted index 
+	
+	Separate out the read/write operations into disconnected if blocks...
+	Do not test for combinations of flags!
+	
+	For example:
+	
+	if (-text flag exists) {
+	  get -text flag value
+	
+	  try { 
+	    1-2 lines of code to build the inverted index
+	  }
+	  catch (...) {
+	    User-friendly warning so user knows the operation (build)
+	    and parameter (value of the -text flag) that had issues
+	  }
+	}
+	
+	Use a similar pattern for the other flag/value pairs
+*/
+
 	
 	/*
 	 * TODO Fix the Javadoc warnings in the code.
@@ -113,4 +158,6 @@ The import java.util.List is never used	InvertedIndex.java	/SearchEngine/src/mai
 	 * review was delayed due to the merge conflicts, but it will be the last time I'll
 	 * move forward with a review when there are warnings in the code!
 	 */
+	
+	// TODO I've warned you about this before: https://github.com/usf-cs272-spring2024/project-BenKamin03/pull/8#issuecomment-1984709989
 }
