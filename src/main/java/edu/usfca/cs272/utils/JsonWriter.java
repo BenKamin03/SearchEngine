@@ -408,6 +408,7 @@ public class JsonWriter {
 		}
 	}
 
+	// TODO Rename writeObjectHash since it works with more than a HashMap!
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 * 
@@ -525,13 +526,19 @@ public class JsonWriter {
 	public static void writeCollectionObjectLine(Object object, Writer writer, int indent) throws IOException {
 		writeIndent("{\n", writer, indent);
 		String str = object.toString();
-		for (String s : str.split("\n")) {
+		for (String s : str.split("\n")) { // TODO ??? Why do you need to split here?
 			writeIndent(s, writer, indent + 1);
 			writer.write("\n");
 		}
 		writeIndent("}", writer, indent);
 	}
 
+	/*
+	 * TODO I'm not sure what the writeCollectionObject methods are for... you have
+	 * a writeArray that it looks like your other code is using. If these aren't necessary
+	 * might be easier to delete, rather than fix.
+	 */
+	
 	/**
 	 * writes the collection object
 	 * 
