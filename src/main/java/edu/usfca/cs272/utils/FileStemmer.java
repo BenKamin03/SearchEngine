@@ -202,8 +202,7 @@ public class FileStemmer {
 
 			// Read a line from the reader and add them to the stemsTree.
 			while ((line = reader.readLine()) != null) {
-				// TODO Fix this one similar to listStems(Path)
-				stemsTree.addAll(uniqueStems(line, stemmer));
+				addStems(line, stemmer, stemsTree);
 			}
 
 			return stemsTree;

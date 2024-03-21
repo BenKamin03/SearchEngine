@@ -1,9 +1,15 @@
 package edu.usfca.cs272.utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
+import opennlp.tools.stemmer.snowball.SnowballStemmer;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
 
 /**
  * Class responsible for filling the InvertedIndex
@@ -14,16 +20,16 @@ import java.util.ArrayList;
  */
 public class FileHandler {
 
-	
      /**
-     * private InvertedIndex
-     */
-    private InvertedIndex invertedIndex; // TODO Add either final -or- static... which one makes sense here?
+      * private InvertedIndex
+      */
+     private final InvertedIndex invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-     * @param invertedIndex the invertedIndex
+      * 
+      * @param invertedIndex the invertedIndex
       */
      public FileHandler(InvertedIndex invertedIndex) {
           this.invertedIndex = invertedIndex;
@@ -34,7 +40,7 @@ public class FileHandler {
       * 
       * @param textPath      - Path to the text file to be hashed
       * @param invertedIndex - Inverted index to be
-     * @throws IOException the IO exception
+      * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
           if (textPath != null)
@@ -44,10 +50,11 @@ public class FileHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
-     * @param input the input path
-     * @param requireText whether the hash should include text files
-     * @throws IOException an IO exception
-     */
+      * 
+      * @param input       the input path
+      * @param requireText whether the hash should include text files
+      * @throws IOException an IO exception
+      */
      public void fillHash(Path input, boolean requireText) throws IOException {
           /*
            * ---------------------------------------------
@@ -69,7 +76,6 @@ public class FileHandler {
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
                     handleFile(input);
                }
-               return; // TODO Remove, not needed
           }
      }
 
@@ -78,51 +84,29 @@ public class FileHandler {
       * stem file that is to be added to the index
       * 
       * @param file - the path to the
-     * @throws IOException an IO exception
+      * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
-				/*
-				 * TODO Fantastic implementation! But, it is now time to make this more
-				 * efficient.
-				 * 
-				 * You should always start with reusing as much code as possible to get the
-				 * initial functionality working. This implementation is perfect for that!
-				 * 
-				 * When refactoring, we then consider whether it makes sense to reduce code
-				 * reuse to improve efficiency. The answer depends on the class. A class like
-				 * FileStemmer is very general, and so it might be more important there to use
-				 * the most general approach (more code reuse) over the most efficient approach
-				 * (less code reuse) everywhere. However, this class solves a more specific
-				 * problem. In the more specific classes, we tend to choose efficiency over
-				 * generalization (and code reuse).
-				 * 
-				 * Here, the use of a *temporary* list to hold the stemmed words causes more
-				 * looping through the words than necessary. You loop once to copy words from
-				 * the file into a list, then loop through that list again to move those words
-				 * into the index. The list ends up being temporary storage, which can often be
-				 * eliminated.
-				 * 
-				 * To fix this, copy/paste logic from the stemmer class and customize to add
-				 * directly to the inverted index instead of to a list first. Use a buffered
-				 * line-by-line approach. The parse method will still be helpful here, and you
-				 * will need the FileStemmer class for future projects as well so do not get rid
-				 * of it.
-				 */
 
-          ArrayList<String> stems = FileStemmer.listStems(file);
-          if (stems.size() > 0) { // TODO Fix formatting, indentation is inconsistent below
-               // Add the index to the inverted index.
-               
-                    int i = 1;
-                    for (String stem : stems) {
-                         invertedIndex.addIndex(stem, file.toString(), i++);
-                    }
-               
+          ArrayList<String> stems;
 
-               // Add the count to the inverted index.
-               
-                    invertedIndex.addCount(file.toString(), stems.size());
-               
+          try (BufferedReader reader = Files.newBufferedReader(file, UTF_8);) {
+               String line = null;
+               stems = new ArrayList<String>();
+               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+
+               while ((line = reader.readLine()) != null) {
+                    FileStemmer.addStems(line, stemmer, stems);
+               }
+
+          }
+
+          if (stems.size() > 0) {
+               int i = 1;
+               for (String stem : stems) {
+                    invertedIndex.addIndex(stem, file.toString(), i++);
+               }
+               invertedIndex.addCount(file.toString(), stems.size());
           }
      }
 

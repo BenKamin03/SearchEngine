@@ -51,7 +51,7 @@ public class ArgumentParser {
 	 * @see Character#isWhitespace(int)
 	 */
 	public static boolean isFlag(String arg) {
-		if (arg != null && arg.length() > 1 && arg.charAt(0) == '-') { // TODO codePointAt
+		if (arg != null && arg.length() > 1 && arg.codePointAt(0) == '-') {
 			int second = arg.codePointAt(1);
 			return !Character.isDigit(second) && !Character.isWhitespace(second);
 		}
@@ -156,30 +156,22 @@ public class ArgumentParser {
 	 * @see Path#of(String, String...)
 	 */
 	public Path getPath(String flag, Path backup) {
-		/*
-		 * TODO Use an approach similar to getInteger so you can also catch cases where
-		 * an invalid symbol causes Path.of to throw an InvalidPathException.
-		 */
-
-		return hasFlag(flag) && getString(flag) != null
-				? Path.of(getString(flag))
-				: backup;
+		 try {
+			return Path.of(getString(flag));
+		} catch (NumberFormatException | NullPointerException ex) {
+			return backup;
+		}
 	}
 
 	/**
 	 * Gets the path if the flag exists
 	 * 
-	 * @param flag the flag to search for
+	 * @param flag   the flag to search for
 	 * @param backup the backup path
 	 * @return the path
 	 */
 	public Path getPathIfFlag(String flag, Path backup) {
-		/*
-		 * TODO Can make a similar change here too (handling the exception)
-		 * if you want to keep a method like this in here. (It doesn't look like
-		 * you use it anymore, but it could be useful to kepe around if you want.)
-		 */
-		return (hasFlag(flag) ? (getString(flag) != null ? Path.of(getString(flag)) : backup) : null);
+		return (hasFlag(flag) ? getPath(flag, backup) : null);
 	}
 
 	/**

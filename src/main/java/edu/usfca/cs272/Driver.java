@@ -1,5 +1,6 @@
 package edu.usfca.cs272;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -9,7 +10,6 @@ import java.util.Arrays;
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
-import edu.usfca.cs272.utils.JsonWriter;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -51,80 +51,48 @@ public class Driver {
 	 * @param args - The command line arguments
 	 */
 	private static void run(String[] args) {
-		ArgumentParser parser = new ArgumentParser();
-
-		parser.parse(args);
-		
-		/*
-		 * TODO Just do:
-		 * 
-		 * ArgumentParser parser = new ArgumentParser(args);
-		 */
-
-		/*
-		 * TODO Do not create these variables here. Declare and define them in the scope
-		 * they are needed. There will be too many flag/value pairs to keep this approach
-		 * of declaring all the variables you want to use at the start of code. 
-		 * 
-		 * What happened to: https://github.com/usf-cs272-spring2024/project-BenKamin03/blob/64a28313df7134830b3c159e5a2a01f519567065/src/main/java/edu/usfca/cs272/Driver.java#L62-L72
-		 */
-		Path text = parser.getPath("-text");
-
-		Path countsPath = null, indexesPath = null;
-		if (parser.hasFlag("-counts"))
-			countsPath = parser.getPath("-counts", Path.of("counts.json"));
-		if (parser.hasFlag("-index"))
-			indexesPath = parser.getPath("-index", Path.of("index.json"));
+		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex = new InvertedIndex();
+		;
 
-		try {
+		if (parser.hasFlag("-text")) {
+			Path text = parser.getPath("-text");
 			FileHandler fileHandler = new FileHandler(invertedIndex);
-			fileHandler.fillInvertedIndex(text, invertedIndex);
+			try {
+				fileHandler.fillInvertedIndex(text, invertedIndex);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
+			}
+		}
 
-			if (indexesPath != null) {
-				JsonWriter.writeObjectHash(invertedIndex.getIndexes(), indexesPath);
+		if (parser.hasFlag("-counts")) {
+			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
+
+			try {
+				invertedIndex.writeCounts(countsPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
 			}
-			if (countsPath != null) {
-				JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
+		}
+
+		if (parser.hasFlag("-index")) {
+			Path indexesPath = parser.getPath("-index", Path.of("index.json"));
+
+			try {
+				invertedIndex.writeIndex(indexesPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
 			}
-		} catch (IOException ex) {
-			/*
-			 * TODO This exception can also happen when writing to file, so this is not
-			 * a good way to handle exceptions here.
-			 */
-		
-			System.out.println("Missing input file.");
 		}
 	}
-	
-	/*
-	TODO Try this for Driver.main:
-	
-	Create the argument parser
-	Create the empty inverted index 
-	
-	Separate out the read/write operations into disconnected if blocks...
-	Do not test for combinations of flags!
-	
-	For example:
-	
-	if (-text flag exists) {
-	  get -text flag value
-	
-	  try { 
-	    1-2 lines of code to build the inverted index
-	  }
-	  catch (...) {
-	    User-friendly warning so user knows the operation (build)
-	    and parameter (value of the -text flag) that had issues
-	  }
-	}
-	
-	Use a similar pattern for the other flag/value pairs
-*/
 
-	
 	/*
 	 * TODO Fix the Javadoc warnings in the code.
 	 * 
@@ -144,20 +112,25 @@ public class Driver {
 	 * below.
 	 */
 
-	// Configuring Eclipse: https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
-	// Project Review: https://usf-cs272-spring2024.notion.site/Project-Review-c04d5128395a4eb499e30f6fbd0c0352
-	
+	// Configuring Eclipse:
+	// https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
+	// Project Review:
+	// https://usf-cs272-spring2024.notion.site/Project-Review-c04d5128395a4eb499e30f6fbd0c0352
+
 	/*-
-Description	Resource	Path	Location	Type
-The import java.util.ArrayList is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 3	Java Problem
-The import java.util.List is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 6	Java Problem
+	Description	Resource	Path	Location	Type
+	The import java.util.ArrayList is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 3	Java Problem
+	The import java.util.List is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 6	Java Problem
 	 */
-	
+
 	/*
-	 * TODO I will still review this since they are easy to fix warnings and the last
-	 * review was delayed due to the merge conflicts, but it will be the last time I'll
+	 * TODO I will still review this since they are easy to fix warnings and the
+	 * last
+	 * review was delayed due to the merge conflicts, but it will be the last time
+	 * I'll
 	 * move forward with a review when there are warnings in the code!
 	 */
-	
-	// TODO I've warned you about this before: https://github.com/usf-cs272-spring2024/project-BenKamin03/pull/8#issuecomment-1984709989
+
+	// TODO I've warned you about this before:
+	// https://github.com/usf-cs272-spring2024/project-BenKamin03/pull/8#issuecomment-1984709989
 }
