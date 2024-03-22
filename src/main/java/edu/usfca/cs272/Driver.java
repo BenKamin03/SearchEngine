@@ -1,5 +1,6 @@
 package edu.usfca.cs272;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -9,7 +10,6 @@ import java.util.Arrays;
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
-import edu.usfca.cs272.utils.JsonWriter;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -51,32 +51,86 @@ public class Driver {
 	 * @param args - The command line arguments
 	 */
 	private static void run(String[] args) {
-		ArgumentParser parser = new ArgumentParser();
-
-		parser.parse(args);
-
-		Path text = parser.getPath("-text");
-
-		Path countsPath = null, indexesPath = null;
-		if (parser.hasFlag("-counts"))
-			countsPath = parser.getPath("-counts", Path.of("counts.json"));
-		if (parser.hasFlag("-index"))
-			indexesPath = parser.getPath("-index", Path.of("index.json"));
+		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex = new InvertedIndex();
+		;
 
-		try {
+		if (parser.hasFlag("-text")) {
+			Path text = parser.getPath("-text");
 			FileHandler fileHandler = new FileHandler(invertedIndex);
-			fileHandler.fillInvertedIndex(text, invertedIndex);
+			try {
+				fileHandler.fillInvertedIndex(text, invertedIndex);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
+			}
+		}
 
-			if (indexesPath != null) {
-				JsonWriter.writeObjectHash(invertedIndex.getIndexes(), indexesPath);
+		if (parser.hasFlag("-counts")) {
+			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
+
+			try {
+				invertedIndex.writeCounts(countsPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
 			}
-			if (countsPath != null) {
-				JsonWriter.writeObject(invertedIndex.getCounts(), countsPath);
+		}
+
+		if (parser.hasFlag("-index")) {
+			Path indexesPath = parser.getPath("-index", Path.of("index.json"));
+
+			try {
+				invertedIndex.writeIndex(indexesPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("File Not Found");
+			} catch (IOException io) {
+				System.out.println("IO Error");
 			}
-		} catch (IOException ex) {
-			System.out.println("Missing input file.");
 		}
 	}
+
+	/*
+	 * TODO Fix the Javadoc warnings in the code.
+	 * 
+	 * Other developers will *not* use poorly unprofessionally documented code
+	 * regardless of whether the code itself is well designed! It is a tedious but
+	 * critical step to the final steps of refactoring. The "Configuring Eclipse"
+	 * guide on the course website shows how to setup Eclipse to see the Javadoc
+	 * warnings. (Open the "View Screenshot" section.)
+	 * 
+	 * As announced in class, when conducting asynchronous reviews, I will no longer
+	 * review code with warnings or major formatting issues in it. That is a sign
+	 * you still need to do a cleanup pass of your code. Please do a complete pass
+	 * of your code for these issues before requesting code review. See the
+	 * "Project Review" guide for details.
+	 * 
+	 * For reference, direct links to the guides and the warnings found are included
+	 * below.
+	 */
+
+	// Configuring Eclipse:
+	// https://usf-cs272-spring2024.notion.site/Configuring-Eclipse-4f735d746e004dbdbc34af6ad2d988cd#1a1a870909bb45f2a92ef5fc51038635
+	// Project Review:
+	// https://usf-cs272-spring2024.notion.site/Project-Review-c04d5128395a4eb499e30f6fbd0c0352
+
+	/*-
+	Description	Resource	Path	Location	Type
+	The import java.util.ArrayList is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 3	Java Problem
+	The import java.util.List is never used	InvertedIndex.java	/SearchEngine/src/main/java/edu/usfca/cs272/utils	line 6	Java Problem
+	 */
+
+	/*
+	 * TODO I will still review this since they are easy to fix warnings and the
+	 * last
+	 * review was delayed due to the merge conflicts, but it will be the last time
+	 * I'll
+	 * move forward with a review when there are warnings in the code!
+	 */
+
+	// TODO I've warned you about this before:
+	// https://github.com/usf-cs272-spring2024/project-BenKamin03/pull/8#issuecomment-1984709989
 }

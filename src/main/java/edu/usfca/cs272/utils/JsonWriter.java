@@ -411,7 +411,7 @@ public class JsonWriter {
 	/**
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 * 
-	 * @param hash the hash
+	 * @param elements the hash
 	 * @param path the file path to use
 	 * @throws IOException if an IO error occurs
 	 *
@@ -419,11 +419,11 @@ public class JsonWriter {
 	 * @see StandardCharsets#UTF_8
 	 * @see #writeArrayObjects(Collection)
 	 */
-	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
+	public static void writeObjectMap(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
 			Path path)
 			throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeObjectHash(hash, writer, 0);
+			writeObjectMap(elements, writer, 0);
 		}
 	}
 
@@ -436,10 +436,10 @@ public class JsonWriter {
 	 * @see StringWriter
 	 * @see #writeArrayObjects(Collection)
 	 */
-	public static String writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<Integer>>> elements) {
+	public static String writeObjectMap(Map<String, ? extends Map<String, ? extends Collection<Integer>>> elements) {
 		try {
 			StringWriter writer = new StringWriter();
-			writeObjectHash(elements, writer, 0);
+			writeObjectMap(elements, writer, 0);
 			return writer.toString();
 		} catch (IOException e) {
 			return null;
@@ -454,7 +454,7 @@ public class JsonWriter {
 	 * @param indent  the indentation
 	 * @throws IOException an IO exception
 	 */
-	public static void writeObjectHashLine(
+	public static void writeObjectMapLine(
 			Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer,
 			int indent) throws IOException {
 		writeQuote(element.getKey(), writer, indent + 1);
@@ -467,7 +467,7 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of collection with
 	 * any type of nested map of String keys to number objects.
 	 *
-	 * @param hash   the elements to write
+	 * @param elements   the elements to write
 	 * @param writer the writer to use
 	 * @param indent the initial indent level; the first bracket is not indented,
 	 *               inner elements are indented by one, and the last bracket is
@@ -480,20 +480,20 @@ public class JsonWriter {
 	 * @see #writeIndent(String, Writer, int)
 	 * @see #writeObject(Map)
 	 */
-	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
+	public static void writeObjectMap(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
 			Writer writer, int indent) throws IOException {
 
-		var iterator = hash.entrySet().iterator();
+		var iterator = elements.entrySet().iterator();
 
 		writer.write("{");
 		if (iterator.hasNext()) {
 			var element = iterator.next();
 			writer.write("\n");
-			writeObjectHashLine(element, writer, indent);
+			writeObjectMapLine(element, writer, indent);
 			while (iterator.hasNext()) {
 				element = iterator.next();
 				writer.write(",\n");
-				writeObjectHashLine(element, writer, indent);
+				writeObjectMapLine(element, writer, indent);
 			}
 		}
 		writeIndentOnNewLine("}", writer, indent);
@@ -525,13 +525,19 @@ public class JsonWriter {
 	public static void writeCollectionObjectLine(Object object, Writer writer, int indent) throws IOException {
 		writeIndent("{\n", writer, indent);
 		String str = object.toString();
-		for (String s : str.split("\n")) {
+		for (String s : str.split("\n")) { // TODO ??? Why do you need to split here?
 			writeIndent(s, writer, indent + 1);
 			writer.write("\n");
 		}
 		writeIndent("}", writer, indent);
 	}
 
+	/*
+	 * TODO I'm not sure what the writeCollectionObject methods are for... you have
+	 * a writeArray that it looks like your other code is using. If these aren't necessary
+	 * might be easier to delete, rather than fix.
+	 */
+	
 	/**
 	 * writes the collection object
 	 * 

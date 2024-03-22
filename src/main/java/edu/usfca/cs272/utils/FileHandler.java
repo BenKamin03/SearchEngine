@@ -1,9 +1,15 @@
 package edu.usfca.cs272.utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
+import opennlp.tools.stemmer.snowball.SnowballStemmer;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
 
 /**
  * Class responsible for filling the InvertedIndex
@@ -14,16 +20,16 @@ import java.util.ArrayList;
  */
 public class FileHandler {
 
-	
      /**
-     * private InvertedIndex
-     */
-    private InvertedIndex invertedIndex;
+      * private InvertedIndex
+      */
+     private final InvertedIndex invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-     * @param invertedIndex the invertedIndex
+      * 
+      * @param invertedIndex the invertedIndex
       */
      public FileHandler(InvertedIndex invertedIndex) {
           this.invertedIndex = invertedIndex;
@@ -34,7 +40,7 @@ public class FileHandler {
       * 
       * @param textPath      - Path to the text file to be hashed
       * @param invertedIndex - Inverted index to be
-     * @throws IOException the IO exception
+      * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
           if (textPath != null)
@@ -44,10 +50,11 @@ public class FileHandler {
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
-     * @param input the input path
-     * @param requireText whether the hash should include text files
-     * @throws IOException an IO exception
-     */
+      * 
+      * @param input       the input path
+      * @param requireText whether the hash should include text files
+      * @throws IOException an IO exception
+      */
      public void fillHash(Path input, boolean requireText) throws IOException {
           /*
            * ---------------------------------------------
@@ -69,7 +76,6 @@ public class FileHandler {
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
                     handleFile(input);
                }
-               return;
           }
      }
 
@@ -78,23 +84,29 @@ public class FileHandler {
       * stem file that is to be added to the index
       * 
       * @param file - the path to the
-     * @throws IOException an IO exception
+      * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
-          ArrayList<String> stems = FileStemmer.listStems(file);
-          if (stems.size() > 0) {
-               // Add the index to the inverted index.
-               
-                    int i = 1;
-                    for (String stem : stems) {
-                         invertedIndex.addIndex(stem, file.toString(), i++);
-                    }
-               
 
-               // Add the count to the inverted index.
-               
-                    invertedIndex.addCount(file.toString(), stems.size());
-               
+          ArrayList<String> stems;
+
+          try (BufferedReader reader = Files.newBufferedReader(file, UTF_8);) {
+               String line = null;
+               stems = new ArrayList<String>();
+               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+
+               while ((line = reader.readLine()) != null) {
+                    FileStemmer.addStems(line, stemmer, stems);
+               }
+
+          }
+
+          if (stems.size() > 0) {
+               int i = 1;
+               for (String stem : stems) {
+                    invertedIndex.addIndex(stem, file.toString(), i++);
+               }
+               invertedIndex.addCount(file.toString(), stems.size());
           }
      }
 
