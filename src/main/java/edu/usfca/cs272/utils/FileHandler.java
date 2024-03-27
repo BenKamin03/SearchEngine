@@ -43,7 +43,7 @@ public class FileHandler {
       * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
-          if (textPath != null)
+          if (textPath != null) // TODO Remove, let a null happen here---it is a bug and show be thrown
                fillHash(textPath, true);
      }
 
@@ -88,23 +88,25 @@ public class FileHandler {
       */
      public void handleFile(Path file) throws IOException {
 
-          ArrayList<String> stems;
+          ArrayList<String> stems; // TODO Remove
 
           try (BufferedReader reader = Files.newBufferedReader(file, UTF_8);) {
                String line = null;
-               stems = new ArrayList<String>();
+               stems = new ArrayList<String>(); // TODO Remove
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+               // TODO Move here: int i = 1;
 
                while ((line = reader.readLine()) != null) {
-                    FileStemmer.addStems(line, stemmer, stems);
+                    FileStemmer.addStems(line, stemmer, stems); // TODO Oh no! This is still adding to a list!
+                    // TODO Move this here: invertedIndex.addIndex(stem, file.toString(), i++);
                }
 
           }
 
-          if (stems.size() > 0) {
+          if (stems.size() > 0) { // TODO This check goes inside of addCount
                int i = 1;
-               for (String stem : stems) {
-                    invertedIndex.addIndex(stem, file.toString(), i++);
+               for (String stem : stems) { // TODO Another loop trhough the stems, remove!
+                    invertedIndex.addIndex(stem, file.toString(), i++); // TODO  Move this up
                }
                invertedIndex.addCount(file.toString(), stems.size());
           }
