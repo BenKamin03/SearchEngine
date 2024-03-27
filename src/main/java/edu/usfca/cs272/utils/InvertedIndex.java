@@ -54,6 +54,11 @@ public class InvertedIndex {
       * do not break encapsulation or require looping.
       */
 
+     public Set<Integer> viewIndexOfWordInLocation(String word, String location) {
+          Map<String, TreeSet<Integer>> wordIndex = indexes.getOrDefault(word, new TreeMap<>());
+          return Collections.unmodifiableSet(wordIndex.getOrDefault(location, new TreeSet<>()));
+      }
+
      /**
       * Returns the indexes
       * 
@@ -103,13 +108,17 @@ public class InvertedIndex {
      }
 
      /**
-      * Returns a set of all indexes.
+      * Returns a set of all the words in the index.
       * 
       * 
-      * @return a set of all indexes
+      * @return a set of all words
       */
-     public Set<String> getIndexKeys() {
+     public Set<String> getWords() {
           return Collections.unmodifiableSet(getIndexes().keySet());
+     }
+
+     public Set<String> getPathsOfWord(String word) {
+          return Collections.unmodifiableSet(indexes.get(word).keySet());
      }
 
      /**
@@ -135,11 +144,7 @@ public class InvertedIndex {
       */
      public boolean hasLocation(String word, String location) {
           TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-          // TODO return wordInIndex != null && wordInIndex.containsKey(location);
-          if (wordInIndex != null) {
-               return wordInIndex.containsKey(location);
-          }
-          return false;
+          return wordInIndex != null && wordInIndex.containsKey(location);
      }
 
      /**
@@ -154,10 +159,7 @@ public class InvertedIndex {
           TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
           if (wordInIndex != null) {
                TreeSet<Integer> locationInWord = wordInIndex.get(location);
-               // TODO return not null && contains
-               if (locationInWord != null) {
-                    return locationInWord.contains(position);
-               }
+               return locationInWord != null && locationInWord.contains(position);
           }
           return false;
      }
@@ -189,7 +191,7 @@ public class InvertedIndex {
       * @return the word count
       */
      public int getCountsInLocation(String location) {
-          return counts.get(location); // TODO Maybe getOrDefault(location, 0) here?
+          return counts.getOrDefault(location, 0);
      }
 
      /**

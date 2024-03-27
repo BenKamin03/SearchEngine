@@ -54,7 +54,6 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex = new InvertedIndex();
-		; // TODO Remove?
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
@@ -62,10 +61,9 @@ public class Driver {
 			try {
 				fileHandler.fillInvertedIndex(text, invertedIndex);
 			} catch (FileNotFoundException fnf) {
-				System.out.println("File Not Found"); // TODO Better output! If File Not Found was going to be output every time, we didn't need different try/catch blocks. Try:
-				// TODO System.out.println("The -text flag is missing a necessary path value.");
+				System.out.println("The -text flag is missing a necessary path value.");
 			} catch (IOException io) {
-				System.out.println("IO Error"); // TODO Fix all the exception output!
+				System.out.println("IO Error with -text file ");
 			}
 		}
 
@@ -75,9 +73,9 @@ public class Driver {
 			try {
 				invertedIndex.writeCounts(countsPath);
 			} catch (FileNotFoundException fnf) {
-				System.out.println("File Not Found");
+				System.out.println("The -counts flag is missing a necessary path value.");
 			} catch (IOException io) {
-				System.out.println("IO Error");
+				System.out.println("IO Error with -counts file");
 			}
 		}
 
@@ -87,9 +85,9 @@ public class Driver {
 			try {
 				invertedIndex.writeIndex(indexesPath);
 			} catch (FileNotFoundException fnf) {
-				System.out.println("File Not Found");
+				System.out.println("The -index flag is missing a necessary path value.");
 			} catch (IOException io) {
-				System.out.println("IO Error");
+				System.out.println("IO Error with -index flag");
 			}
 		}
 	}

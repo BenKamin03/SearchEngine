@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
@@ -87,28 +86,20 @@ public class FileHandler {
       * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
-
-          ArrayList<String> stems; // TODO Remove
-
-          try (BufferedReader reader = Files.newBufferedReader(file, UTF_8);) {
+          try (BufferedReader reader = Files.newBufferedReader(file, UTF_8)) {
                String line = null;
-               stems = new ArrayList<String>(); // TODO Remove
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
-               // TODO Move here: int i = 1;
+               int i = 1;
 
                while ((line = reader.readLine()) != null) {
-                    FileStemmer.addStems(line, stemmer, stems); // TODO Oh no! This is still adding to a list!
-                    // TODO Move this here: invertedIndex.addIndex(stem, file.toString(), i++);
+                    String[] parsedLine = FileStemmer.parse(line);
+
+                    for (String word : parsedLine) {
+                         invertedIndex.addIndex(stemmer.stem(word).toString(), file.toString(), i++);
+                    }
                }
 
-          }
-
-          if (stems.size() > 0) { // TODO This check goes inside of addCount
-               int i = 1;
-               for (String stem : stems) { // TODO Another loop trhough the stems, remove!
-                    invertedIndex.addIndex(stem, file.toString(), i++); // TODO  Move this up
-               }
-               invertedIndex.addCount(file.toString(), stems.size());
+               invertedIndex.addCount(file.toString(), i - 1);
           }
      }
 
