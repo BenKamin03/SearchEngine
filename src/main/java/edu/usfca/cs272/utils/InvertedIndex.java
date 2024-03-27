@@ -48,6 +48,11 @@ public class InvertedIndex {
           indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
                     .add(index);
      }
+     
+     /*
+      * TODO Remove all of the get methods and replace with EFFICIENT views that
+      * do not break encapsulation or require looping.
+      */
 
      /**
       * Returns the indexes
@@ -87,7 +92,7 @@ public class InvertedIndex {
       * @return the unmodifiable set of instances
       */
      public Set<Integer> getIndexOfWordInLocation(String word, String location) {
-          return Collections.unmodifiableSet(indexes.get(word).get(location));
+          return Collections.unmodifiableSet(indexes.get(word).get(location)); // TODO Throws a null pointer if get(word) is null
      }
 
      /**
@@ -130,6 +135,7 @@ public class InvertedIndex {
       */
      public boolean hasLocation(String word, String location) {
           TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
+          // TODO return wordInIndex != null && wordInIndex.containsKey(location);
           if (wordInIndex != null) {
                return wordInIndex.containsKey(location);
           }
@@ -148,6 +154,7 @@ public class InvertedIndex {
           TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
           if (wordInIndex != null) {
                TreeSet<Integer> locationInWord = wordInIndex.get(location);
+               // TODO return not null && contains
                if (locationInWord != null) {
                     return locationInWord.contains(position);
                }
@@ -172,7 +179,7 @@ public class InvertedIndex {
       * @return A TreeMap of counts keyed by category.
       */
      public Map<String, Integer> getCounts() {
-          return Collections.unmodifiableMap(counts);
+          return Collections.unmodifiableMap(counts); // TODO Keep this one
      }
 
      /**
@@ -182,7 +189,7 @@ public class InvertedIndex {
       * @return the word count
       */
      public int getCountsInLocation(String location) {
-          return counts.get(location);
+          return counts.get(location); // TODO Maybe getOrDefault(location, 0) here?
      }
 
      /**
@@ -221,7 +228,7 @@ public class InvertedIndex {
       * 
       * @return the keys of the counts
       */
-     public Set<String> getCountsKeys() {
+     public Set<String> getCountsKeys() { // TODO Could keep this one too
           return getCounts().keySet();
      }
 
@@ -234,4 +241,21 @@ public class InvertedIndex {
      public void writeCounts(Path path) throws IOException {
           JsonWriter.writeObject(counts, path);
      }
+     
+     /*
+      * TODO Okay so the get methods are an issue because of the nested data
+      * and the looping, but the other methods look great.
+      * 
+      * Create a view method per has method that is looking at the same type of
+      * data instead. That is closer to the FileIndex, PrefixMap, and
+      * WordPrefix examples. Like:
+      * 
+      * hasWord --> getWords() returns a view of the indexes keyset
+      * hasLocation --> getLocations(String word) returns a view of the indexes inner map keyset for the word
+      * hasPosition --> ... view of inner most set
+      * 
+      * Does that make sense? You can use the newer WordPrefix example as a basis:
+      * 
+      * https://github.com/usf-cs272-spring2024/cs272-lectures/blob/b58d2cfc1f26c8916ddcb9261bc1143e29923e6d/src/main/java/edu/usfca/cs272/lectures/inheritance/word/WordPrefix.java#L94-L109
+      */
 }
