@@ -59,7 +59,8 @@ public class Driver {
 			Path text = parser.getPath("-text");
 			FileHandler fileHandler = new FileHandler(invertedIndex);
 			try {
-				fileHandler.fillInvertedIndex(text, invertedIndex);
+				if (text != null)
+					fileHandler.fillInvertedIndex(text, invertedIndex);
 			} catch (FileNotFoundException fnf) {
 				System.out.println("The -text flag is missing a necessary path value.");
 			} catch (IOException io) {

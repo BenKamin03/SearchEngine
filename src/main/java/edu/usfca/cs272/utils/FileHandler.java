@@ -42,8 +42,7 @@ public class FileHandler {
       * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
-          if (textPath != null) // TODO Remove, let a null happen here---it is a bug and show be thrown
-               fillHash(textPath, true);
+          fillHash(textPath, true);
      }
 
      /**
