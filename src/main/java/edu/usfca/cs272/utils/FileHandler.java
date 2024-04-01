@@ -89,18 +89,13 @@ public class FileHandler {
                String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
                int i = 1;
+               String fileString = file.toString();
 
                while ((line = reader.readLine()) != null) {
                     String[] parsedLine = FileStemmer.parse(line);
 
                     for (String word : parsedLine) {
-											/*
-											 * TODO Avoid calling toString() on the same instance multiple times, especially
-											 * within a loop. There is no need to keep re-calculating that value. Save it in
-											 * a variable and reuse it instead.
-											 */
-
-                         invertedIndex.addIndex(stemmer.stem(word).toString(), file.toString(), i++);
+                         invertedIndex.addIndex(stemmer.stem(word).toString(), fileString, i++);
                     }
                }
 

@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -498,6 +499,236 @@ public class JsonWriter {
 		}
 		writeIndentOnNewLine("}", writer, indent);
 	}
+
+	/**
+	 * Writes the line for an Object Hash
+	 *
+	 * @param element the element in the map
+	 * @param writer  the writer
+	 * @param indent  the indentation
+	 * @throws IOException an IO Exception
+	 */
+	public static void writeObjectHashLine(
+			Entry<String, ? extends Map<String, ? extends Collection<? extends Number>>> element, Writer writer,
+			int indent) throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": ");
+		writeObjectArrays(element.getValue(), writer, indent + 1);
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON array with nested objects. The generic
+	 * notation used allows this method to be used for any type of collection with
+	 * any type of nested map of String keys to number objects.
+	 *
+	 * @param hash the elements to write
+	 * @param writer   the writer to use
+	 * @param indent   the initial indent level; the first bracket is not indented,
+	 *                 inner elements are indented by one, and the last bracket is
+	 *                 indented at the
+	 *                 initial indentation level
+	 * @throws IOException if an IO error occurs
+	 *
+	 * @see Writer#write(String)
+	 * @see #writeIndent(Writer, int)
+	 * @see #writeIndent(String, Writer, int)
+	 * @see #writeObject(Map)
+	 */
+	public static void writeObjectHash(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> hash,
+			Writer writer, int indent) throws IOException {
+
+		var iterator = hash.entrySet().iterator();
+
+		writer.write("{");
+		if (iterator.hasNext()) {
+			var element = iterator.next();
+			writer.write("\n");
+			writeObjectHashLine(element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeObjectHashLine(element, writer, indent);
+			}
+		}
+		writeIndentOnNewLine("}", writer, indent);
+	}
+
+	/**
+	 * Writes the map line
+	 * 
+	 * @param element the element
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO exception
+	 */
+	public static void writeMapCollectionObjectLine(Entry<String, ? extends Collection<? extends Object>> element,
+			Writer writer, int indent) throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": [");
+		writeCollectionObject(element.getValue(), writer, indent + 1);
+	}
+
+	/**
+	 * Writes the object into JSON, tabbed correctly
+	 * 
+	 * @param object the object
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO Exception
+	 */
+	public static void writeCollectionObjectLine(Object object, Writer writer, int indent) throws IOException {
+		writeIndent("{\n", writer, indent);
+		String str = object.toString();
+		for (String s : str.split("\n")) {
+			writeIndent(s, writer, indent + 1);
+			writer.write("\n");
+		}
+		writeIndent("}", writer, indent);
+	}
+
+	/**
+	 * Writes the collection of Objects
+	 * 
+	 * @param elements the collection
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO Exception
+	 */
+	public static void writeCollectionObject(Collection<? extends Object> elements, Writer writer, int indent)
+			throws IOException {
+		if (elements != null) {
+			var iterator = elements.iterator();
+			if (iterator != null) {
+				writer.write("");
+				if (iterator.hasNext()) {
+					var element = iterator.next();
+					writer.write("\n");
+					writeCollectionObjectLine(element, writer, indent + 1);
+					while (iterator.hasNext()) {
+						element = iterator.next();
+						writer.write(",\n");
+						writeCollectionObjectLine(element, writer, indent + 1);
+					}
+				}
+				writeIndentOnNewLine("]", writer, indent);
+			}
+		} else {
+			writeIndentOnNewLine("]", writer, indent);
+		}
+	}
+
+	/**
+	 * Writes the map into JSON
+	 * 
+	 * @param elements the map
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO Exception
+	 */
+	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
+			Writer writer, int indent) throws IOException {
+		var iterator = elements.entrySet().iterator();
+
+		writer.write("{");
+		if (iterator.hasNext()) {
+			var element = iterator.next();
+			writer.write("\n");
+			writeMapCollectionObjectLine(element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeMapCollectionObjectLine(element, writer, indent);
+			}
+		}
+		writeIndentOnNewLine("}", writer, indent);
+	}
+
+	/**
+	 * Writes the map into JSON
+	 * 
+	 * @param elements the elements
+	 * @return the JSON String
+	 */
+	public static String writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements) {
+		try {
+			StringWriter writer = new StringWriter();
+			writeMapCollectionObject(elements, writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Writes the MapCollectionObject 
+	 * 
+	 * @param elements the map
+	 * @param path the output path
+	 * @throws IOException an IO exception
+	 */
+	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
+			Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeMapCollectionObject(elements, writer, 0);
+		}
+	}
+
+	/**
+	 * Writes the query
+	 * 
+	 * @param elements the query elements
+	 * @param path the output path
+	 * @param writer the writer
+	 * @throws IOException an IO exception
+	 */
+	public static void writeQuery(Map<String, List<Map<String, Object>>> elements, Path path, Writer writer)
+			throws IOException {
+		writer.append("{\n");
+		for (Map.Entry<String, List<Map<String, Object>>> entry : elements.entrySet()) {
+			writer.append("  \"").append(entry.getKey()).append("\": [\n");
+			List<Map<String, Object>> searchResults = entry.getValue();
+			for (int i = 0; i < searchResults.size(); i++) {
+				Map<String, Object> result = searchResults.get(i);
+				writer.append("    ").append(toJsonString(result));
+				if (i < searchResults.size() - 1) {
+					writer.append(",");
+				}
+				writer.append("\n");
+			}
+			writer.append("  ]");
+			if (!entry.equals(elements.entrySet().toArray()[elements.size() - 1])) {
+				writer.append(",");
+			}
+			writer.append("\n");
+		}
+		writer.append("}");
+	}
+
+	/**
+	 * Writes a map of String -> Object
+	 * 
+	 * @param map the map
+	 * @return the String
+	 */
+	private static String toJsonString(Map<String, Object> map) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		boolean first = true;
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+		    if (!first) {
+			   sb.append(", ");
+		    }
+		    sb.append("\"").append(entry.getKey()).append("\": ");
+		    if (entry.getValue() instanceof String) {
+			   sb.append("\"").append(entry.getValue()).append("\"");
+		    } else {
+			   sb.append(entry.getValue());
+		    }
+		    first = false;
+		}
+		sb.append("}");
+		return sb.toString();
+	 }
 
 	/** Prevent instantiating this class of static methods. */
 	private JsonWriter() {

@@ -65,29 +65,14 @@ public class InvertedIndex {
       * @return the list of locations
       */
      public Set<String> getLocationsOfWord(String word) {
-				/*
-				 * TODO It is actually quite inefficient to use getOrDefault here. The new
-				 * TreeMap instance is being created *every time* this method is called,
-				 * regardless of whether one is needed. That ends up creating a lot of
-				 * unnecessary empty instances in memory that the Java garbage collector must
-				 * eventually clean up.
-				 * 
-				 * You have a better approach in your has methods that rely on calling get and
-				 * checking for null values. Use that here (and everywhere else you rely on
-				 * getOrDefault for this problem) instead.
-				 */
-          /*-
           TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
           return wordInIndex != null ? Collections.unmodifiableSet(wordInIndex.keySet()) : Collections.emptySet();
-          */
-
-          return Collections.unmodifiableSet(indexes.getOrDefault(word, new TreeMap<>()).keySet());
      }
 
      /**
       * Returns the all of the instances of a word in a location
       * 
-      * @param word the word
+      * @param word     the word
       * @param location the location
       * @return the list of instances
       */
@@ -166,7 +151,8 @@ public class InvertedIndex {
       * @return the word count
       */
      public int getCountsInLocation(String location) {
-          return counts.getOrDefault(location, 0); // TODO This getOrDefault is okay, because it is not creating a new instance
+          return counts.getOrDefault(location, 0);
+                                                   // instance
      }
 
      /**
@@ -205,7 +191,7 @@ public class InvertedIndex {
       * 
       * @return the keys of the counts
       */
-     public Set<String> getCountsKeys() { // TODO Call getLocations
+     public Set<String> getLocations() {
           return getCounts().keySet();
      }
 
@@ -218,6 +204,14 @@ public class InvertedIndex {
      public void writeCounts(Path path) throws IOException {
           JsonWriter.writeObject(counts, path);
      }
-     
-     // TODO Missing toString
+
+     @Override
+     public String toString() {
+          StringBuilder builder = new StringBuilder();
+          builder.append("Indexes:\n");
+          builder.append(JsonWriter.writeObjectMap(indexes));
+          builder.append("Counts:\n");
+          builder.append(JsonWriter.writeObject(counts));
+          return builder.toString();
+     }
 }

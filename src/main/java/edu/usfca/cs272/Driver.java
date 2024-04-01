@@ -10,6 +10,7 @@ import java.util.Arrays;
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
+import edu.usfca.cs272.utils.QueryHandler;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -54,6 +55,7 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex = new InvertedIndex();
+		QueryHandler queryHandler = new QueryHandler(invertedIndex);
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
@@ -85,6 +87,31 @@ public class Driver {
 
 			try {
 				invertedIndex.writeIndex(indexesPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("The -index flag is missing a necessary path value.");
+			} catch (IOException io) {
+				System.out.println("IO Error with -index flag");
+			}
+		}
+
+		if (parser.hasFlag("-query")) {
+			Path queryPath = parser.getPath("-query");
+
+			try {
+				if (queryPath != null)
+					queryHandler.handleQueries(queryPath, parser.hasFlag("-partial"));
+			} catch (FileNotFoundException fnf) {
+				System.out.println("The -index flag is missing a necessary path value.");
+			} catch (IOException io) {
+				System.out.println("IO Error with -index flag");
+			}
+		}
+
+		if (parser.hasFlag("-results")) {
+			Path resultsPath = parser.getPath("-results", Path.of("results.json"));
+
+			try {
+				queryHandler.writeQuery(resultsPath);
 			} catch (FileNotFoundException fnf) {
 				System.out.println("The -index flag is missing a necessary path value.");
 			} catch (IOException io) {
