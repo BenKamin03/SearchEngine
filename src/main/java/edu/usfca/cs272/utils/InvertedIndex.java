@@ -166,7 +166,7 @@ public class InvertedIndex {
       * @return the word count
       */
      public int getCountsInLocation(String location) {
-          return counts.getOrDefault(location, 0);
+          return counts.getOrDefault(location, 0); // TODO This getOrDefault is okay, because it is not creating a new instance
      }
 
      /**
@@ -205,7 +205,7 @@ public class InvertedIndex {
       * 
       * @return the keys of the counts
       */
-     public Set<String> getCountsKeys() {
+     public Set<String> getCountsKeys() { // TODO Call getLocations
           return getCounts().keySet();
      }
 
@@ -218,4 +218,6 @@ public class InvertedIndex {
      public void writeCounts(Path path) throws IOException {
           JsonWriter.writeObject(counts, path);
      }
+     
+     // TODO Missing toString
 }
