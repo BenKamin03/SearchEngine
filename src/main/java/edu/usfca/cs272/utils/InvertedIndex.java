@@ -65,6 +65,18 @@ public class InvertedIndex {
       * @return the list of locations
       */
      public Set<String> getLocationsOfWord(String word) {
+				/*
+				 * TODO It is actually quite inefficient to use getOrDefault here. The new
+				 * TreeMap instance is being created *every time* this method is called,
+				 * regardless of whether one is needed. That ends up creating a lot of
+				 * unnecessary empty instances in memory that the Java garbage collector must
+				 * eventually clean up.
+				 * 
+				 * You have a better approach in your has methods that rely on calling get and
+				 * checking for null values. Use that here (and everywhere else you rely on
+				 * getOrDefault for this problem) instead.
+				 */
+
           return Collections.unmodifiableSet(indexes.getOrDefault(word, new TreeMap<>()).keySet());
      }
 
