@@ -76,6 +76,10 @@ public class InvertedIndex {
 				 * checking for null values. Use that here (and everywhere else you rely on
 				 * getOrDefault for this problem) instead.
 				 */
+          /*-
+          TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
+          return wordInIndex != null ? Collections.unmodifiableSet(wordInIndex.keySet()) : Collections.emptySet();
+          */
 
           return Collections.unmodifiableSet(indexes.getOrDefault(word, new TreeMap<>()).keySet());
      }
