@@ -94,6 +94,12 @@ public class FileHandler {
                     String[] parsedLine = FileStemmer.parse(line);
 
                     for (String word : parsedLine) {
+											/*
+											 * TODO Avoid calling toString() on the same instance multiple times, especially
+											 * within a loop. There is no need to keep re-calculating that value. Save it in
+											 * a variable and reuse it instead.
+											 */
+
                          invertedIndex.addIndex(stemmer.stem(word).toString(), file.toString(), i++);
                     }
                }
