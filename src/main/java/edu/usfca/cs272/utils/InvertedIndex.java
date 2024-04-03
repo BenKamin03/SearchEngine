@@ -35,6 +35,16 @@ public class InvertedIndex {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
+     
+     /* TODO 
+     public TreeSet<QueryEntry> exactSearch(Set<String> queries) (from one line) {
+    	 
+     }
+     
+     public TreeSet<QueryEntry> partialSearch(Set<String> queries) (from one line) {
+    	 
+     }
+     */
 
      /**
       * Adds an index to the index map. This is used to determine which words are in
@@ -77,6 +87,9 @@ public class InvertedIndex {
       * @return the list of instances
       */
      public Set<Integer> getInstancesOfWordInLocation(String word, String location) {
+    	 /*
+    	  * TODO Need to fix the getOrDefault calls here
+    	  */
           return Collections.unmodifiableSet(
                     indexes.getOrDefault(word, new TreeMap<>()).getOrDefault(location, new TreeSet<>()));
      }
