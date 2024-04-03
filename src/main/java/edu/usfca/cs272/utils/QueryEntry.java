@@ -9,21 +9,23 @@ import java.util.Comparator;
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2024
  */
-public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry> {
+public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry> { // TODO Remove Comparator<QueryEntry>
      /**
      * The total words in the file
      */
-    private int totalWords;
+    private int totalWords; // TODO final
     
      /**
      * The total applied words in the file
      */
     private int appliedWords;
     
+    // TODO Add a member to store the score, update when call addQuery
+    
      /**
      * The file
      */
-    private String file;
+    private String file; // TODO final
 
      /**
       * The constructor for a QueryEntry Object
@@ -64,11 +66,16 @@ public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry
           return ((double) appliedWords / totalWords);
      }
 
+     // TODO @Override
      public String toString() {
           return "\"count\": " + appliedWords + ",\n"
                     + "\"score\": " + String.format("%.8f", getScore()) + ",\n"
                     + "\"where\": \"" + file + "\"";
      }
+     
+     /* TODO 
+     public void toJson(Writer writer, int level)
+     */
 
      /**
       * A simple getter for the total words in the file
@@ -80,7 +87,7 @@ public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry
      }
 
      @Override
-     public int compare(QueryEntry o1, QueryEntry o2) {
+     public int compare(QueryEntry o1, QueryEntry o2) { // TODO Remove this
           return Comparator.comparing(QueryEntry::getScore).thenComparingInt(QueryEntry::getTotalWords)
 
                     .thenComparing(QueryEntry::getFile, Comparator.reverseOrder()).compare(o1, o2);
@@ -88,6 +95,7 @@ public class QueryEntry implements Comparator<QueryEntry>, Comparable<QueryEntry
 
      @Override
      public int compareTo(QueryEntry o) {
+          // TODO Just integrate compare directly into here
           return compare(o, this);
      }
 

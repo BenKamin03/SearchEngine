@@ -34,11 +34,11 @@ public class QueryHandler {
       * 
      * @param invertedIndex the invertedIndex
      */
-    public QueryHandler(InvertedIndex invertedIndex) {
+    public QueryHandler(InvertedIndex invertedIndex) { // TODO pass partial here instead of the methods below
           this.invertedIndex = invertedIndex;
           query = new TreeMap<>();
      }
-
+    
      /**
       * Handles the queries given a path and whether it's partial search
       * 
@@ -69,6 +69,13 @@ public class QueryHandler {
 
           }
      }
+    
+    /* TODO 
+    public void handleQueries(String line) {
+    		TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer) (create a stemmer to reuse)
+    		the other stuff here too
+     }
+     */
 
      /**
       * Adds a query given the stems and the searches
@@ -82,6 +89,7 @@ public class QueryHandler {
 
           TreeSet<QueryEntry> entries = new TreeSet<>();
 
+          // TODO No forEach just use a for loop for now
           search.stream().forEach(word -> {
                try {
                     invertedIndex.getLocationsOfWord(word).forEach((file) -> {
@@ -101,6 +109,7 @@ public class QueryHandler {
                          entries.add(existingEntry);
                     });
                } catch (Exception ex) {
+              	 // TODO Please no
                }
           });
 
