@@ -32,12 +32,16 @@ public class QueryHandler {
       */
      private final TreeMap<String, TreeSet<QueryEntry>> query;
 
+     /**
+      * the setting for whether to include partial searches
+      */
      private final boolean partial;
 
      /**
       * The constructor for a QueryHandler
       * 
       * @param invertedIndex the invertedIndex
+      * @param partial whether the search should include partial matches
       */
      public QueryHandler(InvertedIndex invertedIndex, boolean partial) {
           this.invertedIndex = invertedIndex;
@@ -49,7 +53,6 @@ public class QueryHandler {
       * Handles the queries given a path and whether it's partial search
       * 
       * @param path    the input path
-      * @param partial whether the search includes partial matches
       * @throws IOException an IO exception
       */
      public void handleQueries(Path path) throws IOException {
@@ -63,11 +66,22 @@ public class QueryHandler {
 
           }
      }
-
+     
+     /**
+      * handles the queries given a line of search
+      * 
+      * @param line the line
+      */
      public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
      }
-
+     
+     /**
+      * handles the queries given a line of search and a stemmer
+      * 
+      * @param line the line
+      * @param stemmer the stemmer
+      */
      public void handleQueries(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
           if (stems.size() > 0) {

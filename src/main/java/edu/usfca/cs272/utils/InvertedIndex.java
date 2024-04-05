@@ -37,11 +37,23 @@ public class InvertedIndex {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
-
+     
+     /**
+      * The exact search for a set of queries
+      * 
+      * @param queries the queries
+      * @return the TreeSet of results
+      */
      public TreeSet<QueryEntry> exactSearch(Set<String> queries) {
           return search(queries.iterator());
      }
-
+     
+     /**
+      * the partial search given a set of queries
+      * 
+      * @param queries the queries
+      * @return the TreeSet of results
+      */
      public TreeSet<QueryEntry> partialSearch(Set<String> queries) {
           ArrayList<String> searchStems = new ArrayList<>();
 
@@ -53,7 +65,13 @@ public class InvertedIndex {
 
           return search(searchStems.iterator());
      }
-
+     
+     /**
+      * the way to search
+      * 
+      * @param searchIterator the query iterator
+      * @return the TreeSet of results
+      */
      public TreeSet<QueryEntry> search(Iterator<String> searchIterator) {
           TreeSet<QueryEntry> entries = new TreeSet<>();
 

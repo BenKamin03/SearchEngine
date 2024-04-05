@@ -22,6 +22,9 @@ public class QueryEntry implements Comparable<QueryEntry> {
       */
      private int appliedWords;
 
+     /**
+      * the current score
+      */
      private double score;
 
      /**

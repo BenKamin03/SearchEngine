@@ -700,12 +700,28 @@ public class JsonWriter {
 		writer.append("}");
 	}
 	
+	/**
+	 * writes the query for a search
+	 * 
+	 * @param entry the element
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO exception
+	 */
 	public static void writeQuery(Map.Entry<String, List<Map<String, QueryEntry>>> entry, Writer writer, int indent) throws IOException {
 		writer.append(",\n  \"").append(entry.getKey()).append("\": [\n");
 		writeQuery(entry.getValue(), writer, indent);
 		writer.append("  ]");
 	}
-
+	
+	/**
+	 * writes the query for a search
+	 * 
+	 * @param elements the elements in a search
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException the IO exception
+	 */
 	public static void writeQuery(List<Map<String, QueryEntry>> elements, Writer writer, int indent)
 			throws IOException {
 
@@ -720,7 +736,15 @@ public class JsonWriter {
 			writeQuery(iterator.next(), writer, indent + 1);
 		}
 	}
-
+	
+	/**
+	 * writes the query for a search (file, query entries)
+	 * 
+	 * @param elements the elements
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an IO exception
+	 */
 	public static void writeQuery(Map<String, QueryEntry> elements, Writer writer, int indent) throws IOException {
 		var iterator = elements.values().iterator();
 
