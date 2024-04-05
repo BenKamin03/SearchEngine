@@ -2,7 +2,9 @@ package edu.usfca.cs272.utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,16 +37,56 @@ public class InvertedIndex {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
-     
-     /* TODO 
-     public TreeSet<QueryEntry> exactSearch(Set<String> queries) (from one line) {
-    	 
+
+     public TreeSet<QueryEntry> exactSearch(Set<String> queries) {
+          return search(queries.iterator());
      }
-     
-     public TreeSet<QueryEntry> partialSearch(Set<String> queries) (from one line) {
-    	 
+
+     public TreeSet<QueryEntry> partialSearch(Set<String> queries) {
+          ArrayList<String> searchStems = new ArrayList<>();
+
+          for (String stem : queries) {
+               getWords().stream()
+                         .filter(curr -> curr.startsWith(stem))
+                         .forEach(searchStems::add);
+          }
+
+          return search(searchStems.iterator());
      }
-     */
+
+     public TreeSet<QueryEntry> search(Iterator<String> searchIterator) {
+          TreeSet<QueryEntry> entries = new TreeSet<>();
+
+          while (searchIterator.hasNext()) {
+               String word = searchIterator.next();
+
+               TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(word);
+               if (wordLocations != null) {
+                    var locationIterator = wordLocations.keySet().iterator();
+                    while (locationIterator.hasNext()) {
+                         String file = locationIterator.next();
+
+                         QueryEntry existingEntry = entries.stream()
+                                   .filter(entry -> entry.getFile().equals(file))
+                                   .findFirst()
+                                   .orElse(null);
+
+                         if (existingEntry != null) {
+                              entries.remove(existingEntry);
+                         } else {
+                              existingEntry = new QueryEntry(file, getCountsInLocation(file));
+                         }
+
+                         int size = wordLocations.get(file).size();
+                         if (size > 0)
+                              existingEntry.addQuery(size);
+
+                         entries.add(existingEntry);
+                    }
+               }
+          }
+          return entries;
+     }
 
      /**
       * Adds an index to the index map. This is used to determine which words are in
@@ -87,11 +129,14 @@ public class InvertedIndex {
       * @return the list of instances
       */
      public Set<Integer> getInstancesOfWordInLocation(String word, String location) {
-    	 /*
-    	  * TODO Need to fix the getOrDefault calls here
-    	  */
-          return Collections.unmodifiableSet(
-                    indexes.getOrDefault(word, new TreeMap<>()).getOrDefault(location, new TreeSet<>()));
+          TreeMap<String, TreeSet<Integer>> wordMap = indexes.get(word);
+          if (wordMap != null) {
+               TreeSet<Integer> instances = wordMap.get(location);
+               if (instances != null) {
+                    return instances;
+               }
+          }
+          return Collections.unmodifiableSet(new TreeSet<>());
      }
 
      /**
@@ -165,7 +210,6 @@ public class InvertedIndex {
       */
      public int getCountsInLocation(String location) {
           return counts.getOrDefault(location, 0);
-                                                   // instance
      }
 
      /**

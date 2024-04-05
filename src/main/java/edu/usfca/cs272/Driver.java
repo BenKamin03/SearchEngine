@@ -55,7 +55,7 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex = new InvertedIndex();
-		QueryHandler queryHandler = new QueryHandler(invertedIndex);
+		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
@@ -99,11 +99,11 @@ public class Driver {
 
 			try {
 				if (queryPath != null)
-					queryHandler.handleQueries(queryPath, parser.hasFlag("-partial"));
+					queryHandler.handleQueries(queryPath);
 			} catch (FileNotFoundException fnf) {
-				System.out.println("The -index flag is missing a necessary path value.");
+				System.out.println("The -query flag is missing a necessary path value.");
 			} catch (IOException io) {
-				System.out.println("IO Error with -index flag");
+				System.out.println("IO Error with -query flag");
 			}
 		}
 
@@ -113,9 +113,9 @@ public class Driver {
 			try {
 				queryHandler.writeQuery(resultsPath);
 			} catch (FileNotFoundException fnf) {
-				System.out.println("The -index flag is missing a necessary path value.");
+				System.out.println("The -results flag is missing a necessary path value.");
 			} catch (IOException io) {
-				System.out.println("IO Error with -index flag");
+				System.out.println("IO Error with -results flag");
 			}
 		}
 	}

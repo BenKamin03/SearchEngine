@@ -413,14 +413,15 @@ public class JsonWriter {
 	 * Writes the elements as a pretty JSON array with nested objects to file.
 	 * 
 	 * @param elements the hash
-	 * @param path the file path to use
+	 * @param path     the file path to use
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
 	 * @see StandardCharsets#UTF_8
 	 * @see #writeArrayObjects(Collection)
 	 */
-	public static void writeObjectMap(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
+	public static void writeObjectMap(
+			Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
 			Path path)
 			throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
@@ -468,12 +469,12 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of collection with
 	 * any type of nested map of String keys to number objects.
 	 *
-	 * @param elements   the elements to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level; the first bracket is not indented,
-	 *               inner elements are indented by one, and the last bracket is
-	 *               indented at the
-	 *               initial indentation level
+	 * @param elements the elements to write
+	 * @param writer   the writer to use
+	 * @param indent   the initial indent level; the first bracket is not indented,
+	 *                 inner elements are indented by one, and the last bracket is
+	 *                 indented at the
+	 *                 initial indentation level
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Writer#write(String)
@@ -481,7 +482,8 @@ public class JsonWriter {
 	 * @see #writeIndent(String, Writer, int)
 	 * @see #writeObject(Map)
 	 */
-	public static void writeObjectMap(Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
+	public static void writeObjectMap(
+			Map<String, ? extends Map<String, ? extends Collection<? extends Number>>> elements,
 			Writer writer, int indent) throws IOException {
 
 		var iterator = elements.entrySet().iterator();
@@ -521,12 +523,12 @@ public class JsonWriter {
 	 * notation used allows this method to be used for any type of collection with
 	 * any type of nested map of String keys to number objects.
 	 *
-	 * @param hash the elements to write
-	 * @param writer   the writer to use
-	 * @param indent   the initial indent level; the first bracket is not indented,
-	 *                 inner elements are indented by one, and the last bracket is
-	 *                 indented at the
-	 *                 initial indentation level
+	 * @param hash   the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *               inner elements are indented by one, and the last bracket is
+	 *               indented at the
+	 *               initial indentation level
 	 * @throws IOException if an IO error occurs
 	 *
 	 * @see Writer#write(String)
@@ -557,8 +559,8 @@ public class JsonWriter {
 	 * Writes the map line
 	 * 
 	 * @param element the element
-	 * @param writer the writer
-	 * @param indent the indentation
+	 * @param writer  the writer
+	 * @param indent  the indentation
 	 * @throws IOException an IO exception
 	 */
 	public static void writeMapCollectionObjectLine(Entry<String, ? extends Collection<? extends Object>> element,
@@ -590,8 +592,8 @@ public class JsonWriter {
 	 * Writes the collection of Objects
 	 * 
 	 * @param elements the collection
-	 * @param writer the writer
-	 * @param indent the indentation
+	 * @param writer   the writer
+	 * @param indent   the indentation
 	 * @throws IOException an IO Exception
 	 */
 	public static void writeCollectionObject(Collection<? extends Object> elements, Writer writer, int indent)
@@ -621,8 +623,8 @@ public class JsonWriter {
 	 * Writes the map into JSON
 	 * 
 	 * @param elements the map
-	 * @param writer the writer
-	 * @param indent the indentation
+	 * @param writer   the writer
+	 * @param indent   the indentation
 	 * @throws IOException an IO Exception
 	 */
 	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
@@ -660,10 +662,10 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the MapCollectionObject 
+	 * Writes the MapCollectionObject
 	 * 
 	 * @param elements the map
-	 * @param path the output path
+	 * @param path     the output path
 	 * @throws IOException an IO exception
 	 */
 	public static void writeMapCollectionObject(Map<String, ? extends Collection<? extends Object>> elements,
@@ -677,31 +679,54 @@ public class JsonWriter {
 	 * Writes the query
 	 * 
 	 * @param elements the query elements
-	 * @param path the output path
-	 * @param writer the writer
+	 * @param path     the output path
+	 * @param writer   the writer
 	 * @throws IOException an IO exception
 	 */
-	public static void writeQuery(Map<String, List<Map<String, Object>>> elements, Path path, Writer writer)
+	public static void writeQuery(Map<String, List<Map<String, QueryEntry>>> elements, Path path, Writer writer)
 			throws IOException {
 		writer.append("{\n");
-		for (Map.Entry<String, List<Map<String, Object>>> entry : elements.entrySet()) {
-			writer.append("  \"").append(entry.getKey()).append("\": [\n");
-			List<Map<String, Object>> searchResults = entry.getValue();
-			for (int i = 0; i < searchResults.size(); i++) {
-				Map<String, Object> result = searchResults.get(i);
-				writer.append("    ").append(toJsonString(result));
-				if (i < searchResults.size() - 1) {
-					writer.append(",");
-				}
-				writer.append("\n");
-			}
-			writer.append("  ]");
-			if (!entry.equals(elements.entrySet().toArray()[elements.size() - 1])) {
-				writer.append(",");
-			}
-			writer.append("\n");
+
+		var iterator = elements.entrySet().iterator();
+
+		if (iterator.hasNext()) {
+			writeQuery(iterator.next(), writer, 0);
+		}
+
+		while (iterator.hasNext()) {
+			writer.write(",\n");
+			writeQuery(iterator.next(), writer, 0);
 		}
 		writer.append("}");
+	}
+	
+	public static void writeQuery(Map.Entry<String, List<Map<String, QueryEntry>>> entry, Writer writer, int indent) throws IOException {
+		writer.append(",\n  \"").append(entry.getKey()).append("\": [\n");
+		writeQuery(entry.getValue(), writer, indent);
+		writer.append("  ]");
+	}
+
+	public static void writeQuery(List<Map<String, QueryEntry>> elements, Writer writer, int indent)
+			throws IOException {
+
+		var iterator = elements.iterator();
+
+		if (iterator.hasNext()) {
+			writeQuery(iterator.next(), writer, indent + 1);
+		}
+
+		while (iterator.hasNext()) {
+			writer.write(",\n");
+			writeQuery(iterator.next(), writer, indent + 1);
+		}
+	}
+
+	public static void writeQuery(Map<String, QueryEntry> elements, Writer writer, int indent) throws IOException {
+		var iterator = elements.values().iterator();
+
+		if (iterator.hasNext()) {
+			iterator.next().toJSON(writer, indent);
+		}
 	}
 
 	/**
@@ -710,25 +735,25 @@ public class JsonWriter {
 	 * @param map the map
 	 * @return the String
 	 */
-	private static String toJsonString(Map<String, Object> map) {
+	public static String toJsonString(Map<String, Object> map) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		boolean first = true;
 		for (Map.Entry<String, Object> entry : map.entrySet()) {
-		    if (!first) {
-			   sb.append(", ");
-		    }
-		    sb.append("\"").append(entry.getKey()).append("\": ");
-		    if (entry.getValue() instanceof String) {
-			   sb.append("\"").append(entry.getValue()).append("\"");
-		    } else {
-			   sb.append(entry.getValue());
-		    }
-		    first = false;
+			if (!first) {
+				sb.append(", ");
+			}
+			sb.append("\"").append(entry.getKey()).append("\": ");
+			if (entry.getValue() instanceof String) {
+				sb.append("\"").append(entry.getValue()).append("\"");
+			} else {
+				sb.append(entry.getValue());
+			}
+			first = false;
 		}
 		sb.append("}");
 		return sb.toString();
-	 }
+	}
 
 	/** Prevent instantiating this class of static methods. */
 	private JsonWriter() {
