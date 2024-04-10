@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.TreeMap;
@@ -59,11 +60,21 @@ public class InvertedIndex {
           ArrayList<String> searchStems = new ArrayList<>();
 
           for (String stem : queries) {
-          	// TODO Access the index the directly indexes.tailMap(stem).entrySet, then use tailMap and break when no longer matching
-               getWords().stream()
-                         .filter(curr -> curr.startsWith(stem))
-                         .forEach(searchStems::add); // TODO Another linear search
+
+               // TODO Access the index the directly indexes.tailMap(stem).entrySet, then use tailMap and break when no longer matching
+
+               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet = indexes.tailMap(stem).entrySet()
+                         .iterator();
+               Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
+
+               while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
+                    searchStems.add(curr.getKey());
+               }
           }
+          
+          System.out.println(queries);
+          System.out.println(searchStems);
+          System.out.println();
 
           return search(searchStems.iterator());
      }
