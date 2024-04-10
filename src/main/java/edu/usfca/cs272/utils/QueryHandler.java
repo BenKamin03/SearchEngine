@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -30,7 +31,7 @@ public class QueryHandler {
      /**
       * The query
       */
-     private final TreeMap<String, TreeSet<QueryEntry>> query;
+     private final TreeMap<String, List<QueryEntry>> query;
 
      /**
       * the setting for whether to include partial searches

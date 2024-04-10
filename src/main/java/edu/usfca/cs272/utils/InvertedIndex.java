@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -38,100 +40,101 @@ public class InvertedIndex {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
      }
-     
+
      /**
       * The exact search for a set of queries
       * 
       * @param queries the queries
       * @return the TreeSet of results
       */
-     public TreeSet<QueryEntry> exactSearch(Set<String> queries) {
-    	 // TODO Copy search into both exact and partial then modify
-          return search(queries.iterator());
-     }
-     
-     /**
-      * the partial search given a set of queries
-      * 
-      * @param queries the queries
-      * @return the TreeSet of results
-      */
-     public TreeSet<QueryEntry> partialSearch(Set<String> queries) {
-          ArrayList<String> searchStems = new ArrayList<>();
+     public List<QueryEntry> exactSearch(Set<String> queries) {
+          Iterator<String> searchIterator = queries.iterator();
 
-          for (String stem : queries) {
-
-               // TODO Access the index the directly indexes.tailMap(stem).entrySet, then use tailMap and break when no longer matching
-
-               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet = indexes.tailMap(stem).entrySet()
-                         .iterator();
-               Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
-
-               while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
-                    searchStems.add(curr.getKey());
-               }
-          }
-          
-          System.out.println(queries);
-          System.out.println(searchStems);
-          System.out.println();
-
-          return search(searchStems.iterator());
-     }
-     
-     /* TODO 
-     public TreeSet<QueryEntry> search(Set<String> queries, boolean partial) {
-        if (partial) {
-            return partialSearch(stems);
-        } else {
-        
-        }
-     }
-     */
-     
-     /**
-      * the way to search
-      * 
-      * @param searchIterator the query iterator
-      * @return the TreeSet of results
-      */
-     public TreeSet<QueryEntry> search(Iterator<String> searchIterator) {
-          TreeSet<QueryEntry> entries = new TreeSet<>(); // TODO Make this a list instead
-          // TODO Map<String (file), QueryEntry> lookup = ...HashMap
+          List<QueryEntry> entries = new ArrayList<>();
+          Map<String, QueryEntry> lookup = new HashMap<>();
 
           while (searchIterator.hasNext()) {
                String word = searchIterator.next();
 
                TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(word);
                if (wordLocations != null) {
-                    var locationIterator = wordLocations.keySet().iterator(); // TODO entrySet
+                    var locationIterator = wordLocations.entrySet().iterator();
                     while (locationIterator.hasNext()) {
-                         String file = locationIterator.next();
-                         
-                         	// TODO if (not in the lookup) add a new entry to both the map and list
+                         Entry<String, TreeSet<Integer>> location = locationIterator.next();
 
-                         QueryEntry existingEntry = entries.stream()
-                                   .filter(entry -> entry.getFile().equals(file))
-                                   .findFirst()
-                                   .orElse(null); // TODO Linear search for a query entry based on its file
+                         lookup.computeIfAbsent(location.getKey(), (String f) -> {
+                              QueryEntry newEntry = new QueryEntry(location.getKey(),
+                                        getCountsInLocation(location.getKey()));
+                              entries.add(newEntry);
+                              return newEntry;
+                         });
 
-                         if (existingEntry != null) {
-                              entries.remove(existingEntry);
-                         } else {
-                              existingEntry = new QueryEntry(file, getCountsInLocation(file));
-                         }
-
-                         int size = wordLocations.get(file).size();
+                         int size = location.getValue().size();
                          if (size > 0)
-                              existingEntry.addQuery(size);
+                              lookup.get(location.getKey()).addQuery(size);
 
-                         entries.add(existingEntry);
                     }
                }
           }
-          
-          // TODO Sort once here instead
+
+          Collections.sort(entries);
           return entries;
+     }
+
+     /**
+      * the partial search given a set of queries
+      * 
+      * @param queries the queries
+      * @return the TreeSet of results
+      */
+     public List<QueryEntry> partialSearch(Set<String> queries) {
+          List<QueryEntry> entries = new ArrayList<>();
+          Map<String, QueryEntry> lookup = new HashMap<>();
+
+          for (String stem : queries) {
+
+               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet = indexes.tailMap(stem).entrySet()
+                         .iterator();
+               Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
+
+               while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
+
+                    TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(curr.getKey());
+
+                    if (wordLocations != null) {
+
+                         Iterator<Entry<String, TreeSet<Integer>>> locationIterator = wordLocations.entrySet()
+                                   .iterator();
+                         
+                         while (locationIterator.hasNext()) {
+                              Entry<String, TreeSet<Integer>> location = locationIterator.next();
+
+                              lookup.computeIfAbsent(location.getKey(), (String f) -> {
+                                   QueryEntry newEntry = new QueryEntry(location.getKey(),
+                                             getCountsInLocation(location.getKey()));
+                                   entries.add(newEntry);
+                                   return newEntry;
+                              });
+
+                              int size = location.getValue().size();
+                              if (size > 0) {
+                                   lookup.get(location.getKey()).addQuery(size);
+                              }
+                         }
+                    }
+               }
+          }
+
+          Collections.sort(entries);
+          return entries;
+     }
+
+     public List<QueryEntry> search(Set<String> queries, boolean partial) {
+          if (partial) {
+               return partialSearch(queries);
+          } else {
+               return exactSearch(queries);
+          }
      }
 
      /**
