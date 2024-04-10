@@ -36,6 +36,8 @@ public class QueryHandler {
       * the setting for whether to include partial searches
       */
      private final boolean partial;
+     
+     // TODO Store a search function instead of a boolean
 
      /**
       * The constructor for a QueryHandler
@@ -47,6 +49,8 @@ public class QueryHandler {
           this.invertedIndex = invertedIndex;
           query = new TreeMap<>();
           this.partial = partial;
+          
+          // TODO searchMethod = partial ? invertedIndex::partial etc.
      }
 
      /**
@@ -84,6 +88,8 @@ public class QueryHandler {
       */
      public void handleQueries(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+          // TODO var joined = getSearchFromWords(stems); and then check if you already have results for this
+          // TODO use the new search method here instead
           if (stems.size() > 0) {
                if (partial) {
                     query.put(getSearchFromWords(stems), invertedIndex.partialSearch(stems));
@@ -112,5 +118,7 @@ public class QueryHandler {
      public void writeQuery(Path path) throws IOException {
           JsonWriter.writeMapCollectionObject(query, path);
      }
+     
+     // TODO Add some view methods, toString
 
 }

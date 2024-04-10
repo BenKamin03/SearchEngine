@@ -45,6 +45,7 @@ public class InvertedIndex {
       * @return the TreeSet of results
       */
      public TreeSet<QueryEntry> exactSearch(Set<String> queries) {
+    	 // TODO Copy search into both exact and partial then modify
           return search(queries.iterator());
      }
      
@@ -58,13 +59,24 @@ public class InvertedIndex {
           ArrayList<String> searchStems = new ArrayList<>();
 
           for (String stem : queries) {
+          	// TODO Access the index the directly indexes.tailMap(stem).entrySet, then use tailMap and break when no longer matching
                getWords().stream()
                          .filter(curr -> curr.startsWith(stem))
-                         .forEach(searchStems::add);
+                         .forEach(searchStems::add); // TODO Another linear search
           }
 
           return search(searchStems.iterator());
      }
+     
+     /* TODO 
+     public TreeSet<QueryEntry> search(Set<String> queries, boolean partial) {
+        if (partial) {
+            return partialSearch(stems);
+        } else {
+        
+        }
+     }
+     */
      
      /**
       * the way to search
@@ -73,21 +85,24 @@ public class InvertedIndex {
       * @return the TreeSet of results
       */
      public TreeSet<QueryEntry> search(Iterator<String> searchIterator) {
-          TreeSet<QueryEntry> entries = new TreeSet<>();
+          TreeSet<QueryEntry> entries = new TreeSet<>(); // TODO Make this a list instead
+          // TODO Map<String (file), QueryEntry> lookup = ...HashMap
 
           while (searchIterator.hasNext()) {
                String word = searchIterator.next();
 
                TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(word);
                if (wordLocations != null) {
-                    var locationIterator = wordLocations.keySet().iterator();
+                    var locationIterator = wordLocations.keySet().iterator(); // TODO entrySet
                     while (locationIterator.hasNext()) {
                          String file = locationIterator.next();
+                         
+                         	// TODO if (not in the lookup) add a new entry to both the map and list
 
                          QueryEntry existingEntry = entries.stream()
                                    .filter(entry -> entry.getFile().equals(file))
                                    .findFirst()
-                                   .orElse(null);
+                                   .orElse(null); // TODO Linear search for a query entry based on its file
 
                          if (existingEntry != null) {
                               entries.remove(existingEntry);
@@ -103,6 +118,8 @@ public class InvertedIndex {
                     }
                }
           }
+          
+          // TODO Sort once here instead
           return entries;
      }
 
