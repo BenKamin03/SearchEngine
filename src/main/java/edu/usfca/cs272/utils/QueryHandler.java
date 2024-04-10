@@ -31,7 +31,7 @@ public class QueryHandler {
      /**
       * The query
       */
-     private final TreeMap<String, List<QueryEntry>> query;
+     private final TreeMap<String, List<InvertedIndex.QueryEntry>> query;
 
      /**
       * the setting for whether to include partial searches
