@@ -644,8 +644,6 @@ public class JsonWriter {
 		}
 		writeIndentOnNewLine("}", writer, indent);
 	}
-	
-	// TODO Revisit think have some extra methods not being used (but should be?)
 
 	/**
 	 * Writes the map into JSON
@@ -674,84 +672,6 @@ public class JsonWriter {
 			Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
 			writeMapCollectionObject(elements, writer, 0);
-		}
-	}
-
-	/**
-	 * Writes the query
-	 * 
-	 * @param elements the query elements
-	 * @param path     the output path
-	 * @param writer   the writer
-	 * @throws IOException an IO exception
-	 */
-	public static void writeQuery(Map<String, List<Map<String, QueryEntry>>> elements, Path path, Writer writer)
-			throws IOException {
-		writer.append("{\n");
-
-		var iterator = elements.entrySet().iterator();
-
-		if (iterator.hasNext()) {
-			writeQuery(iterator.next(), writer, 0);
-		}
-
-		while (iterator.hasNext()) {
-			writer.write(",\n");
-			writeQuery(iterator.next(), writer, 0);
-		}
-		writer.append("}");
-	}
-	
-	/**
-	 * writes the query for a search
-	 * 
-	 * @param entry the element
-	 * @param writer the writer
-	 * @param indent the indentation
-	 * @throws IOException an IO exception
-	 */
-	public static void writeQuery(Map.Entry<String, List<Map<String, QueryEntry>>> entry, Writer writer, int indent) throws IOException {
-		writer.append(",\n  \"").append(entry.getKey()).append("\": [\n");
-		writeQuery(entry.getValue(), writer, indent);
-		writer.append("  ]");
-	}
-	
-	/**
-	 * writes the query for a search
-	 * 
-	 * @param elements the elements in a search
-	 * @param writer the writer
-	 * @param indent the indentation
-	 * @throws IOException the IO exception
-	 */
-	public static void writeQuery(List<Map<String, QueryEntry>> elements, Writer writer, int indent)
-			throws IOException {
-
-		var iterator = elements.iterator();
-
-		if (iterator.hasNext()) {
-			writeQuery(iterator.next(), writer, indent + 1);
-		}
-
-		while (iterator.hasNext()) {
-			writer.write(",\n");
-			writeQuery(iterator.next(), writer, indent + 1);
-		}
-	}
-	
-	/**
-	 * writes the query for a search (file, query entries)
-	 * 
-	 * @param elements the elements
-	 * @param writer the writer
-	 * @param indent the indentation
-	 * @throws IOException an IO exception
-	 */
-	public static void writeQuery(Map<String, QueryEntry> elements, Writer writer, int indent) throws IOException {
-		var iterator = elements.values().iterator();
-
-		if (iterator.hasNext()) {
-			iterator.next().toJSON(writer, indent);
 		}
 	}
 
