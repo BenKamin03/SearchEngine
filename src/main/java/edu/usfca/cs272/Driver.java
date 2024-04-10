@@ -70,7 +70,18 @@ public class Driver {
 			}
 		}
 		
-		// TODO if (parser.hasFlag("-query")) {
+		if (parser.hasFlag("-query")) {
+			Path queryPath = parser.getPath("-query");
+
+			try {
+				if (queryPath != null)
+					queryHandler.handleQueries(queryPath);
+			} catch (FileNotFoundException fnf) {
+				System.out.println("The -query flag is missing a necessary path value.");
+			} catch (IOException io) {
+				System.out.println("IO Error with -query flag");
+			}
+		}
 
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
@@ -93,19 +104,6 @@ public class Driver {
 				System.out.println("The -index flag is missing a necessary path value.");
 			} catch (IOException io) {
 				System.out.println("IO Error with -index flag");
-			}
-		}
-
-		if (parser.hasFlag("-query")) {
-			Path queryPath = parser.getPath("-query");
-
-			try {
-				if (queryPath != null)
-					queryHandler.handleQueries(queryPath);
-			} catch (FileNotFoundException fnf) {
-				System.out.println("The -query flag is missing a necessary path value.");
-			} catch (IOException io) {
-				System.out.println("IO Error with -query flag");
 			}
 		}
 
