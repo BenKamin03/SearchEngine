@@ -644,6 +644,8 @@ public class JsonWriter {
 		}
 		writeIndentOnNewLine("}", writer, indent);
 	}
+	
+	// TODO Revisit think have some extra methods not being used (but should be?)
 
 	/**
 	 * Writes the map into JSON

@@ -69,6 +69,8 @@ public class Driver {
 				System.out.println("IO Error with -text file ");
 			}
 		}
+		
+		// TODO if (parser.hasFlag("-query")) {
 
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));

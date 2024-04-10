@@ -11,11 +11,11 @@ import java.util.Comparator;
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2024
  */
-public class QueryEntry implements Comparable<QueryEntry> { 
+public class QueryEntry implements Comparable<QueryEntry> { // TODO Make this a non-static inner class
      /**
       * The total words in the file
       */
-     private final int totalWords; // 
+     private final int totalWords;
 
      /**
       * The total applied words in the file
@@ -38,9 +38,9 @@ public class QueryEntry implements Comparable<QueryEntry> {
       * @param file       the query File
       * @param totalWords the total words in the file
       */
-     public QueryEntry(String file, int totalWords) {
+     public QueryEntry(String file, int totalWords) {  // TODO Remove totalWords... access your word count map directly
           this.file = file;
-          this.totalWords = totalWords;
+          this.totalWords = totalWords; // TODO counts.get(file)
           appliedWords = 0;
           score = 0;
      }
