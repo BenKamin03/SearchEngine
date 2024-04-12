@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 
+import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
@@ -24,40 +27,30 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
 public class QueryHandler {
 
      /**
-      * The inverted index
-      */
-     private final InvertedIndex invertedIndex;
-
-     /**
       * The query
       */
-     private final TreeMap<String, List<InvertedIndex.QueryEntry>> query;
+     private final TreeMap<String, List<QueryEntry>> query;
 
      /**
-      * the setting for whether to include partial searches
+      * the search function
       */
-     private final boolean partial;
-     
-     // TODO Store a search function instead of a boolean
+     private final Function<Set<String>, List<QueryEntry>> searchFunction;
 
      /**
       * The constructor for a QueryHandler
       * 
       * @param invertedIndex the invertedIndex
-      * @param partial whether the search should include partial matches
+      * @param partial       whether the search should include partial matches
       */
      public QueryHandler(InvertedIndex invertedIndex, boolean partial) {
-          this.invertedIndex = invertedIndex;
           query = new TreeMap<>();
-          this.partial = partial;
-          
-          // TODO searchMethod = partial ? invertedIndex::partial etc.
+          searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
      }
 
      /**
       * Handles the queries given a path and whether it's partial search
       * 
-      * @param path    the input path
+      * @param path the input path
       * @throws IOException an IO exception
       */
      public void handleQueries(Path path) throws IOException {
@@ -71,7 +64,7 @@ public class QueryHandler {
 
           }
      }
-     
+
      /**
       * handles the queries given a line of search
       * 
@@ -80,22 +73,22 @@ public class QueryHandler {
      public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
      }
-     
+
      /**
       * handles the queries given a line of search and a stemmer
       * 
-      * @param line the line
+      * @param line    the line
       * @param stemmer the stemmer
       */
      public void handleQueries(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-          // TODO var joined = getSearchFromWords(stems); and then check if you already have results for this
-          // TODO use the new search method here instead
           if (stems.size() > 0) {
-               if (partial) {
-                    query.put(getSearchFromWords(stems), invertedIndex.partialSearch(stems));
+               String key = getSearchFromWords(stems);
+               List<QueryEntry> val = query.get(key);
+               if (val != null) {
+                    query.put(key, val);
                } else {
-                    query.put(getSearchFromWords(stems), invertedIndex.exactSearch(stems));
+                    query.put(key, searchFunction.apply(stems));
                }
           }
      }
@@ -117,9 +110,29 @@ public class QueryHandler {
       * @throws IOException an IO Exception
       */
      public void writeQuery(Path path) throws IOException {
-          JsonWriter.writeMapCollectionObject(query, path);
+          JsonWriter.writeQuery(query, path);
      }
-     
-     // TODO Add some view methods, toString
 
+     @Override
+     public String toString() {
+          return JsonWriter.writeQuery(query);
+     }
+
+     /**
+      * returns the search function
+      * 
+      * @return the search function
+      */
+     public Function<Set<String>, List<QueryEntry>> getSearchFunction() {
+          return searchFunction;
+     }
+
+     /**
+      * gets the lines used to get the query entries
+      * 
+      * @return the query's keyset
+      */
+     public Set<String> getQueryLines() {
+          return Collections.unmodifiableSet(query.keySet());
+     }
 }

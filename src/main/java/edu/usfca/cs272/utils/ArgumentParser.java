@@ -156,7 +156,7 @@ public class ArgumentParser {
 	 * @see Path#of(String, String...)
 	 */
 	public Path getPath(String flag, Path backup) {
-		 try {
+		try {
 			return Path.of(getString(flag));
 		} catch (NumberFormatException | NullPointerException ex) {
 			return backup;

@@ -83,7 +83,7 @@ public class FileStemmer {
 	 * @see Collection#add(Object)
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
-		for (String word : parse(line)) { 
+		for (String word : parse(line)) {
 			stems.add(stemmer.stem(word).toString());
 		}
 	}

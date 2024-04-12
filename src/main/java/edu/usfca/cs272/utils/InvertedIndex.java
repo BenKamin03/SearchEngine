@@ -106,7 +106,7 @@ public class InvertedIndex {
 
                          Iterator<Entry<String, TreeSet<Integer>>> locationIterator = wordLocations.entrySet()
                                    .iterator();
-                         
+
                          while (locationIterator.hasNext()) {
                               Entry<String, TreeSet<Integer>> location = locationIterator.next();
 
@@ -129,6 +129,13 @@ public class InvertedIndex {
           return entries;
      }
 
+     /**
+      * searches from the queries and whether it's partial
+      * 
+      * @param queries the queries
+      * @param partial search type
+      * @return the list of query entries
+      */
      public List<QueryEntry> search(Set<String> queries, boolean partial) {
           if (partial) {
                return partialSearch(queries);
@@ -321,32 +328,36 @@ public class InvertedIndex {
           return builder.toString();
      }
 
+     /**
+      * A simple query entry class
+      * 
+      * @author Ben Kamin
+      */
      public class QueryEntry implements Comparable<QueryEntry> {
           /**
            * The total words in the file
            */
           private final int totalWords;
-     
+
           /**
            * The total applied words in the file. Stored because counts.get() is O(log(n))
            */
           private int appliedWords;
-     
+
           /**
            * the current score
            */
           private double score;
-     
+
           /**
            * The file
            */
           private final String file;
-     
+
           /**
            * The constructor for a QueryEntry Object
            * 
-           * @param file       the query File
-           * @param totalWords the total words in the file
+           * @param file the query File
            */
           public QueryEntry(String file) {
                this.file = file;
@@ -354,7 +365,7 @@ public class InvertedIndex {
                appliedWords = 0;
                score = 0;
           }
-     
+
           /**
            * A getter for the file
            * 
@@ -363,7 +374,7 @@ public class InvertedIndex {
           public String getFile() {
                return file;
           }
-     
+
           /**
            * Adds a file to the query
            * 
@@ -373,7 +384,7 @@ public class InvertedIndex {
                appliedWords += addAppliedWords;
                score = ((double) appliedWords / totalWords);
           }
-     
+
           /**
            * A simple calculation for determining the score of the query in the file
            * 
@@ -382,20 +393,19 @@ public class InvertedIndex {
           public double getScore() {
                return score;
           }
-     
+
           @Override
           public String toString() {
                return "\"count\": " + appliedWords + ",\n"
                          + "\"score\": " + String.format("%.8f", getScore()) + ",\n"
                          + "\"where\": \"" + file + "\"";
           }
-     
-     
+
           /**
            * writes the query entry into the writer in JSON format
            * 
            * @param writer the writer
-           * @param level the level
+           * @param level  the level
            * @throws IOException an IO Exception
            */
           public void toJSON(Writer writer, int level) throws IOException {
@@ -405,8 +415,8 @@ public class InvertedIndex {
                writer.write("\"score\": " + String.format("%.8f", getScore()) + ",\n");
                JsonWriter.writeIndent(writer, level);
                writer.write("\"where\": \"" + file + "\"");
-           }
-     
+          }
+
           /**
            * A simple getter for the total words in the file
            * 
@@ -415,12 +425,12 @@ public class InvertedIndex {
           public int getTotalWords() {
                return totalWords;
           }
-     
+
           @Override
           public int compareTo(QueryEntry o) {
                return Comparator.comparing(QueryEntry::getScore).thenComparingInt(QueryEntry::getTotalWords)
                          .thenComparing(QueryEntry::getFile, Comparator.reverseOrder()).compare(o, this);
           }
-     
+
      }
 }

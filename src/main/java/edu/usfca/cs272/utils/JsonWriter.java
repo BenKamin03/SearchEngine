@@ -10,9 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -672,6 +673,108 @@ public class JsonWriter {
 			Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
 			writeMapCollectionObject(elements, writer, 0);
+		}
+	}
+
+	/**
+	 * Writes the query
+	 * 
+	 * @param elements the elements
+	 * @return the JSON String
+	 */
+	public static String writeQuery(Map<String, ? extends Collection<? extends Object>> elements) {
+		try {
+			StringWriter writer = new StringWriter();
+			writeMapCollectionObject(elements, writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Writes the query
+	 * 
+	 * @param elements the map
+	 * @param path     the output path
+	 * @throws IOException an IO exception
+	 */
+	public static void writeQuery(Map<String, ? extends Collection<? extends QueryEntry>> elements,
+			Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeMapCollectionObject(elements, writer, 0);
+		}
+	}
+
+	/**
+	 * Writes the query
+	 * 
+	 * @param elements the elements
+	 * @param writer the writer
+	 * @param indent the indentation
+	 * @throws IOException an io exception
+	 */
+	public static void writeQuery(Map<String, ? extends Collection<? extends QueryEntry>> elements,
+			Writer writer, int indent) throws IOException {
+		var iterator = elements.entrySet().iterator();
+
+		writer.write("{");
+		if (iterator.hasNext()) {
+			var element = iterator.next();
+			writer.write("\n");
+			writeQuery(element, writer, indent);
+			while (iterator.hasNext()) {
+				element = iterator.next();
+				writer.write(",\n");
+				writeQuery(element, writer, indent);
+			}
+		}
+		writeIndentOnNewLine("}", writer, indent);
+	}
+
+	/**
+	 * Writes the query line
+	 * 
+	 * @param element the element
+	 * @param writer  the writer
+	 * @param indent  the indentation
+	 * @throws IOException an IO exception
+	 */
+	public static void writeQuery(Entry<String, ? extends Collection<? extends QueryEntry>> element,
+			Writer writer, int indent) throws IOException {
+		writeQuote(element.getKey(), writer, indent + 1);
+		writer.write(": [");
+		writeQuery(element.getValue(), writer, indent + 1);
+	}
+
+	/**
+	 * Writes the query
+	 * 
+	 * @param elements the collection
+	 * @param writer   the writer
+	 * @param indent   the indentation
+	 * @throws IOException an IO Exception
+	 */
+	public static void writeQuery(Collection<? extends QueryEntry> elements, Writer writer, int indent)
+			throws IOException {
+		if (elements != null) {
+			var iterator = elements.iterator();
+			if (iterator != null) {
+				writer.write("");
+				if (iterator.hasNext()) {
+					var element = iterator.next();
+					writer.write("\n");
+					element.toJSON(writer, indent + 1);
+					while (iterator.hasNext()) {
+						element = iterator.next();
+						writer.write(",\n");
+						element.toJSON(writer, indent + 1);
+					}
+				}
+				writeIndentOnNewLine("]", writer, indent);
+			}
+		} else {
+			writeIndentOnNewLine("]", writer, indent);
 		}
 	}
 
