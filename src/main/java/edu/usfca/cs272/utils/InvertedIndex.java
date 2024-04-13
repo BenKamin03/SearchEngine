@@ -58,6 +58,7 @@ public class InvertedIndex {
           while (searchIterator.hasNext()) {
                String word = searchIterator.next();
 
+               // TODO Move this common code into a private search helper method, and then use it in both exact and partial search 
                TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(word);
                if (wordLocations != null) {
                     var locationIterator = wordLocations.entrySet().iterator();
@@ -71,7 +72,7 @@ public class InvertedIndex {
                          });
 
                          int size = location.getValue().size();
-                         if (size > 0)
+                         if (size > 0) // TODO Is this needed? Will it ever be 0?
                               lookup.get(location.getKey()).addQuery(size);
 
                     }
@@ -218,10 +219,10 @@ public class InvertedIndex {
           if (wordMap != null) {
                TreeSet<Integer> instances = wordMap.get(location);
                if (instances != null) {
-                    return instances;
+                    return instances; // TODO Make this unmodifiable!
                }
           }
-          return Collections.unmodifiableSet(new TreeSet<>());
+          return Collections.unmodifiableSet(new TreeSet<>()); // TODO Collections.emptySet
      }
 
      /**
@@ -303,7 +304,7 @@ public class InvertedIndex {
       * @param file  - The file to count the number of times
       * @param count - The number of times the item is
       */
-     public void addCount(String file, int count) {
+     public void addCount(String file, int count) { // TODO Make private or remove
           if (count > 0)
                counts.put(file, count);
      }
@@ -409,7 +410,7 @@ public class InvertedIndex {
            * 
            * @param addAppliedWords the amount of applied words in the file
            */
-          public void addQuery(int addAppliedWords) {
+          public void addQuery(int addAppliedWords) { // TODO Make private
                appliedWords += addAppliedWords;
                score = ((double) appliedWords / totalWords);
           }
