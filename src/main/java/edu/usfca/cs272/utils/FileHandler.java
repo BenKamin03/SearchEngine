@@ -41,7 +41,7 @@ public class FileHandler {
       * @param invertedIndex - Inverted index to be
       * @throws IOException the IO exception
       */
-     public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
+     public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException { // TODO Remove InvertedIndex parameter
           fillHash(textPath, true);
      }
 
