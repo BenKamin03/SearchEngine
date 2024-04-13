@@ -86,8 +86,8 @@ public class QueryHandler {
                String key = getSearchFromWords(stems);
                List<QueryEntry> val = query.get(key);
                if (val != null) {
-                    query.put(key, val);
-               } else {
+                    query.put(key, val); // TODO Can skip this if statement, val is already in the map
+               } else { // TODO test if val == null, then do this
                     query.put(key, searchFunction.apply(stems));
                }
           }
@@ -135,4 +135,14 @@ public class QueryHandler {
      public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
+     
+     /*
+      * TODO Now that QueryEntry only method that makes modifications will be
+      * private, you can create a get method for a query line.
+      * 
+      * public List<...> getQueryResults(String line)
+      * 
+      * ...just make sure to stem and join the line before getting the results,
+      * since raw query lines are NOT stored in your map!
+      */
 }
