@@ -117,7 +117,7 @@ public class FileHandler {
 								 * that more controlled setting. See: https://www.elastic.co/customers/github
 								 */
 
-               invertedIndex.addCount(file.toString(), i - 1);
+               // invertedIndex.addCount(file.toString(), i - 1);
           }
      }
      

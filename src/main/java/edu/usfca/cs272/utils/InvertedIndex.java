@@ -56,27 +56,7 @@ public class InvertedIndex {
           Map<String, QueryEntry> lookup = new HashMap<>();
 
           while (searchIterator.hasNext()) {
-               String word = searchIterator.next();
-
-               // TODO Move this common code into a private search helper method, and then use it in both exact and partial search 
-               TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(word);
-               if (wordLocations != null) {
-                    var locationIterator = wordLocations.entrySet().iterator();
-                    while (locationIterator.hasNext()) {
-                         Entry<String, TreeSet<Integer>> location = locationIterator.next();
-
-                         lookup.computeIfAbsent(location.getKey(), (String f) -> {
-                              QueryEntry newEntry = new QueryEntry(location.getKey());
-                              entries.add(newEntry);
-                              return newEntry;
-                         });
-
-                         int size = location.getValue().size();
-                         if (size > 0) // TODO Is this needed? Will it ever be 0?
-                              lookup.get(location.getKey()).addQuery(size);
-
-                    }
-               }
+               queryWord(indexes.get(searchIterator.next()), entries, lookup);
           }
 
           Collections.sort(entries);
@@ -100,34 +80,30 @@ public class InvertedIndex {
                Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
 
                while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
-
-                    TreeMap<String, TreeSet<Integer>> wordLocations = indexes.get(curr.getKey());
-
-                    if (wordLocations != null) {
-
-                         Iterator<Entry<String, TreeSet<Integer>>> locationIterator = wordLocations.entrySet()
-                                   .iterator();
-
-                         while (locationIterator.hasNext()) {
-                              Entry<String, TreeSet<Integer>> location = locationIterator.next();
-
-                              lookup.computeIfAbsent(location.getKey(), (String f) -> {
-                                   QueryEntry newEntry = new QueryEntry(location.getKey());
-                                   entries.add(newEntry);
-                                   return newEntry;
-                              });
-
-                              int size = location.getValue().size();
-                              if (size > 0) {
-                                   lookup.get(location.getKey()).addQuery(size);
-                              }
-                         }
-                    }
+                    queryWord(indexes.get(curr.getKey()), entries, lookup);
                }
           }
 
           Collections.sort(entries);
           return entries;
+     }
+
+     private void queryWord(TreeMap<String, TreeSet<Integer>> wordLocations, List<QueryEntry> entries, Map<String, QueryEntry> lookup) {
+          if (wordLocations != null) {
+               var locationIterator = wordLocations.entrySet().iterator();
+               while (locationIterator.hasNext()) {
+                    Entry<String, TreeSet<Integer>> location = locationIterator.next();
+
+                    lookup.computeIfAbsent(location.getKey(), (String f) -> {
+                         QueryEntry newEntry = new QueryEntry(location.getKey());
+                         entries.add(newEntry);
+                         return newEntry;
+                    });
+
+                    int size = location.getValue().size();
+                    lookup.get(location.getKey()).addQuery(size);
+               }
+          }
      }
 
      /**
@@ -154,37 +130,20 @@ public class InvertedIndex {
       * @param index    - the index to add to the index map
       */
      public void addIndex(String word, String location, int index) {
-          indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
-                    .add(index);
-          
-					/*
-					 * TODO To ensure our search result scores and rankings are always correct, we
-					 * need to update the word count here instead (see comments in your builder
-					 * class). This will keep the index and the counts always in sync with each
-					 * other and better encapsulated. There are two ways to go about this (choose
-					 * one):
-					 * 
-					 * 1) Every time a NEW word, location, position is added, increase the count for
-					 * that location by 1. If we accidentally add the same word, location, and
-					 * position again later, it should NOT increment the word count because it did
-					 * not add anything new to the index. This is more direct and easier to
-					 * implement now, but slightly complicates multithreading later. For example:
-					 * 
-					 * add(hello, hello.txt, 12) --> new entry, increment count by one
-					 * 
-					 * add(hello, hello.txt, 12) --> old entry, do not increment count
-					 * 
-					 * 2) Keep the maximum position found for a location as the word count. Ignore
-					 * positions less than what is already stored. This is harder to reason about
-					 * now and not a direct measurement, but slightly easier to multithread.
-					 * 
-					 * add(hello, hello.txt, 12) --> set word count to 12
-					 * 
-					 * add(world, hello.txt, 73) --> since 73 > 12, set word count to 73
-					 * 
-					 * add(earth, hello.txt, 10) --> since 10 < 73, ignore
-					 */
+          if (!hasPosition(word, location, index)) {
+               counts.compute(location, (key, val) -> {
+                    return (counts.containsKey(key) ? val : 0) + 1;
+               });
+               // counts.computeIfPresent(location, (key, val) -> {
+               // return val + 1;
+               // });
+               // counts.computeIfAbsent(location, (key) -> {
+               // return 1;
+               // });
 
+               indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
+                         .add(index);
+          }
      }
 
      /**
@@ -219,10 +178,10 @@ public class InvertedIndex {
           if (wordMap != null) {
                TreeSet<Integer> instances = wordMap.get(location);
                if (instances != null) {
-                    return instances; // TODO Make this unmodifiable!
+                    return Collections.unmodifiableSet(instances);
                }
           }
-          return Collections.unmodifiableSet(new TreeSet<>()); // TODO Collections.emptySet
+          return Collections.emptySet();
      }
 
      /**
@@ -296,17 +255,6 @@ public class InvertedIndex {
       */
      public int getCountsInLocation(String location) {
           return counts.getOrDefault(location, 0);
-     }
-
-     /**
-      * Adds the count with the specified file
-      * 
-      * @param file  - The file to count the number of times
-      * @param count - The number of times the item is
-      */
-     public void addCount(String file, int count) { // TODO Make private or remove
-          if (count > 0)
-               counts.put(file, count);
      }
 
      /**
@@ -410,7 +358,7 @@ public class InvertedIndex {
            * 
            * @param addAppliedWords the amount of applied words in the file
            */
-          public void addQuery(int addAppliedWords) { // TODO Make private
+          private void addQuery(int addAppliedWords) {
                appliedWords += addAppliedWords;
                score = ((double) appliedWords / totalWords);
           }
