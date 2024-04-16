@@ -61,21 +61,25 @@ public class Driver {
 			Path text = parser.getPath("-text");
 			FileHandler fileHandler = new FileHandler(invertedIndex);
 			try {
-				if (text != null) // TODO How about a warning if text is null?
-					fileHandler.fillInvertedIndex(text, invertedIndex); // TODO With an instance-based FileHandler, you should not need to pass the index as a parameter here
+				if (text != null) 
+					fileHandler.fillInvertedIndex(text); 
+				else
+					System.out.println("The path given by -text is null");
 			} catch (FileNotFoundException fnf) {
 				System.out.println("The -text flag is missing a necessary path value.");
 			} catch (IOException io) {
 				System.out.println("IO Error with -text file ");
 			}
 		}
-		
+
 		if (parser.hasFlag("-query")) {
 			Path queryPath = parser.getPath("-query");
 
 			try {
-				if (queryPath != null) // TODO Warning if path is null?
+				if (queryPath != null)
 					queryHandler.handleQueries(queryPath);
+				else
+					System.out.println("The path given by -query is null");
 			} catch (FileNotFoundException fnf) {
 				System.out.println("The -query flag is missing a necessary path value.");
 			} catch (IOException io) {
