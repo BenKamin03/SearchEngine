@@ -41,7 +41,7 @@ public class FileHandler {
       * @param invertedIndex - Inverted index to be
       * @throws IOException the IO exception
       */
-     public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException {
+     public void fillInvertedIndex(Path textPath, InvertedIndex invertedIndex) throws IOException { // TODO Remove InvertedIndex parameter
           fillHash(textPath, true);
      }
 
@@ -99,9 +99,41 @@ public class FileHandler {
                     }
                }
 
+								/*
+								 * TODO At this point, we need to remove this operation from here.
+								 * 
+								 * It is efficient (happening only once per file), but not encapsulated (the
+								 * word count for a file can be set to an arbitrary value). Since we use that
+								 * word count for the search score and ranking, it needs to match exactly what
+								 * is stored in the index at all times.
+								 * 
+								 * That means instead of once per file, you need to update the count once per
+								 * word. It also makes your code friendlier for multithreading when build and
+								 * search operations are happening concurrently. See the index for details.
+								 * 
+								 * Note: We might make a different design decision in a different setting. For
+								 * example, ElasticSearch (used by GitHub to enable search of your repositories)
+								 * uses inverted indices and may prioritize efficiency over encapsulation in
+								 * that more controlled setting. See: https://www.elastic.co/customers/github
+								 */
+
                invertedIndex.addCount(file.toString(), i - 1);
           }
      }
+     
+     /*
+      * TODO It can help to have a static version of handleFile for future projects.
+      * To do this with the least amount of code change, do this:
+      * 
+      * 1. Change the current handleFile to:
+      * public static void handleFile(Path file, InvertedIndex invertedIndex) throws IOException
+      * 
+      * 2. Create a NEW version of the method like this:
+      * 
+      * public void handleFile(Path file) throws IOException {
+      *     handleFile(file, this.invertedIndex);
+      * }
+      */
 
      /**
       * Filters a path to see if it ends with one of the given extensions. This is
