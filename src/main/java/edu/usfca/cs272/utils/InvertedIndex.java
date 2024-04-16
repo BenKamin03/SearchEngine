@@ -87,7 +87,14 @@ public class InvertedIndex {
           Collections.sort(entries);
           return entries;
      }
-
+     
+     /**
+      * queries the word in the locations
+      * 
+      * @param wordLocations the locations of the word
+      * @param entries the entries of QueryEntries
+      * @param lookup the lookup table
+      */
      private void queryWord(TreeMap<String, TreeSet<Integer>> wordLocations, List<QueryEntry> entries, Map<String, QueryEntry> lookup) {
           if (wordLocations != null) {
                var locationIterator = wordLocations.entrySet().iterator();

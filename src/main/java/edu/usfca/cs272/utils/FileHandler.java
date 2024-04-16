@@ -38,7 +38,6 @@ public class FileHandler {
       * Fills the inverted index with the contents of the file.
       * 
       * @param textPath      - Path to the text file to be hashed
-      * @param invertedIndex - Inverted index to be
       * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath) throws IOException {

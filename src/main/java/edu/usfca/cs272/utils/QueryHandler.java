@@ -136,7 +136,14 @@ public class QueryHandler {
      public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
-
+     
+     /**
+      * gets the query results for a line of search and a stemmer
+      * 
+      * @param line the line of search
+      * @param stemmer the stemmer
+      * @return the list of queries
+      */
      public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
@@ -155,7 +162,13 @@ public class QueryHandler {
           
           return Collections.emptyList();
      }
-
+     
+     /**
+      * gets the query results for a line
+      * 
+      * @param line the line
+      * @return the list of queries
+      */
      public List<QueryEntry> getQueryResults(String line) {
           return getQueryResutls(line, new SnowballStemmer(ENGLISH));
      }
