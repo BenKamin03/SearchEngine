@@ -85,9 +85,10 @@ public class QueryHandler {
           if (stems.size() > 0) {
                String key = getSearchFromWords(stems);
                List<QueryEntry> val = query.get(key);
-               if (val != null) {
-                    query.put(key, val); // TODO Can skip this if statement, val is already in the map
-               } else { // TODO test if val == null, then do this
+
+               query.put(key, val);
+
+               if (val == null) {
                     query.put(key, searchFunction.apply(stems));
                }
           }
@@ -135,14 +136,23 @@ public class QueryHandler {
      public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
-     
-     /*
-      * TODO Now that QueryEntry only method that makes modifications will be
-      * private, you can create a get method for a query line.
-      * 
-      * public List<...> getQueryResults(String line)
-      * 
-      * ...just make sure to stem and join the line before getting the results,
-      * since raw query lines are NOT stored in your map!
-      */
+
+     public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
+          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+
+          String key = getSearchFromWords(stems);
+          List<QueryEntry> val = query.get(key);
+
+          query.put(key, val);
+
+          if (val == null) {
+               query.put(key, searchFunction.apply(stems));
+          }
+
+          return val;
+     }
+
+     public List<QueryEntry> getQueryResults(String line) {
+          return getQueryResutls(line, new SnowballStemmer(ENGLISH));
+     }
 }
