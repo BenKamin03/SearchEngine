@@ -140,16 +140,20 @@ public class QueryHandler {
      public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
-          String key = getSearchFromWords(stems);
-          List<QueryEntry> val = query.get(key);
+          if (stems.size() > 0) {
+               String key = getSearchFromWords(stems);
+               List<QueryEntry> val = query.get(key);
 
-          query.put(key, val);
+               query.put(key, val);
 
-          if (val == null) {
-               query.put(key, searchFunction.apply(stems));
+               if (val == null) {
+                    query.put(key, searchFunction.apply(stems));
+               }
+
+               return val;
           }
-
-          return val;
+          
+          return Collections.emptyList();
      }
 
      public List<QueryEntry> getQueryResults(String line) {
