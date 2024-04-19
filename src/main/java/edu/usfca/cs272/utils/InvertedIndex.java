@@ -63,7 +63,12 @@ public class InvertedIndex {
           Map<String, QueryEntry> lookup = new HashMap<>();
 
           while (searchIterator.hasNext()) {
-               queryWord(indexes.get(searchIterator.next()), entries, lookup);
+               indexesLock.readLock().lock();
+               try {
+                    queryWord(indexes.get(searchIterator.next()), entries, lookup);
+               } finally {
+                    indexesLock.readLock().unlock();
+               }
           }
 
           Collections.sort(entries);
@@ -165,6 +170,7 @@ public class InvertedIndex {
 
      public void addIndex(TreeMap<String, TreeSet<Integer>> file, String fileName) {
           indexesLock.writeLock().lock();
+          countsLock.writeLock().lock();
           try {
                var words = file.entrySet().iterator();
                int count = 0;
@@ -180,6 +186,7 @@ public class InvertedIndex {
                     counts.put(fileName, count);
           } finally {
                indexesLock.writeLock().unlock();
+               countsLock.writeLock().unlock();
           }
      }
 
@@ -378,16 +385,34 @@ public class InvertedIndex {
       * @throws IOException io exception
       */
      public void writeCounts(Path path) throws IOException {
-          JsonWriter.writeObject(counts, path);
+          countsLock.readLock().lock();
+          try {
+               JsonWriter.writeObject(counts, path);
+          } finally {
+               countsLock.readLock().unlock();
+          }
      }
 
      @Override
      public String toString() {
           StringBuilder builder = new StringBuilder();
           builder.append("Indexes:\n");
-          builder.append(JsonWriter.writeObjectMap(indexes));
+
+          indexesLock.readLock().lock();
+          try {
+               builder.append(JsonWriter.writeObjectMap(indexes));
+          } finally {
+               indexesLock.readLock().unlock();
+          }
+          
           builder.append("Counts:\n");
-          builder.append(JsonWriter.writeObject(counts));
+
+          countsLock.readLock().lock();
+          try {
+               builder.append(JsonWriter.writeObject(counts));
+          } finally {
+               countsLock.readLock().unlock();
+          }
           return builder.toString();
      }
 

@@ -31,10 +31,14 @@ public class QueryHandler {
       */
      private final TreeMap<String, List<QueryEntry>> query;
 
+     private final MultiReaderLock queryLock;
+
      /**
       * the search function
       */
      private final Function<Set<String>, List<QueryEntry>> searchFunction;
+
+     private final WorkQueue workQueue;
 
      /**
       * The constructor for a QueryHandler
@@ -42,9 +46,11 @@ public class QueryHandler {
       * @param invertedIndex the invertedIndex
       * @param partial       whether the search should include partial matches
       */
-     public QueryHandler(InvertedIndex invertedIndex, boolean partial) {
+     public QueryHandler(InvertedIndex invertedIndex, boolean partial, int threads) {
           query = new TreeMap<>();
           searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
+          workQueue = new WorkQueue(threads);
+          queryLock = new MultiReaderLock();
      }
 
      /**
@@ -59,9 +65,18 @@ public class QueryHandler {
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
 
                while ((line = reader.readLine()) != null) {
-                    handleQueries(line, stemmer);
-               }
+                    String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
+                    if (key.length() > 0) {
+                         queryLock.writeLock().lock();
+                         try {
+                              query.put(key, getQueryResutls(line, stemmer));
+                         } finally {
+                              queryLock.writeLock().unlock();
+                         }
+                    }
 
+               }
+               workQueue.join();
           }
      }
 
@@ -81,17 +96,32 @@ public class QueryHandler {
       * @param stemmer the stemmer
       */
      public void handleQueries(String line, SnowballStemmer stemmer) {
-          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-          if (stems.size() > 0) {
-               String key = getSearchFromWords(stems);
-               List<QueryEntry> val = query.get(key);
+          workQueue.execute(() -> {
+               TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+               if (stems.size() > 0) {
+                    String key = getSearchFromWords(stems);
+                    List<QueryEntry> val;
 
-               query.put(key, val);
+                    queryLock.readLock().lock();
+                    try {
+                         val = query.get(key);
+                    } finally {
+                         queryLock.readLock().unlock();
+                    }
 
-               if (val == null) {
-                    query.put(key, searchFunction.apply(stems));
+                    queryLock.writeLock().lock();
+                    try {
+                         if (val == null) {
+                              query.put(key, searchFunction.apply(stems));
+                         } else {
+                              query.put(key, val);
+                         }
+                    } finally {
+                         queryLock.writeLock().unlock();
+                    }
                }
-          }
+               System.out.println(stems);
+          });
      }
 
      /**
@@ -111,12 +141,22 @@ public class QueryHandler {
       * @throws IOException an IO Exception
       */
      public void writeQuery(Path path) throws IOException {
-          JsonWriter.writeQuery(query, path);
+          queryLock.readLock().lock();
+          try {
+               JsonWriter.writeQuery(query, path);
+          } finally {
+               queryLock.readLock().unlock();
+          }
      }
 
      @Override
      public String toString() {
-          return JsonWriter.writeQuery(query);
+          queryLock.readLock().lock();
+          try {
+               return JsonWriter.writeQuery(query);
+          } finally {
+               queryLock.readLock().unlock();
+          }
      }
 
      /**
@@ -134,13 +174,18 @@ public class QueryHandler {
       * @return the query's keyset
       */
      public Set<String> getQueryLines() {
-          return Collections.unmodifiableSet(query.keySet());
+          queryLock.readLock().lock();
+          try {
+               return Collections.unmodifiableSet(query.keySet());
+          } finally {
+               queryLock.readLock().unlock();
+          }
      }
-     
+
      /**
       * gets the query results for a line of search and a stemmer
       * 
-      * @param line the line of search
+      * @param line    the line of search
       * @param stemmer the stemmer
       * @return the list of queries
       */
@@ -149,20 +194,24 @@ public class QueryHandler {
 
           if (stems.size() > 0) {
                String key = getSearchFromWords(stems);
-               List<QueryEntry> val = query.get(key);
+               queryLock.readLock().lock();
+               List<QueryEntry> val;
 
-               query.put(key, val);
-
-               if (val == null) {
-                    query.put(key, searchFunction.apply(stems));
+               try {
+                    val = query.get(key);
+               } finally {
+                    queryLock.readLock().unlock();
                }
 
+               if (val == null) {
+                    val = searchFunction.apply(stems);
+               }
                return val;
           }
-          
+
           return Collections.emptyList();
      }
-     
+
      /**
       * gets the query results for a line
       * 

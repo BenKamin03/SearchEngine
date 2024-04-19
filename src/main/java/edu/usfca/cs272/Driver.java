@@ -55,13 +55,15 @@ public class Driver {
 	private static void run(String[] args) {
 		ArgumentParser parser = new ArgumentParser(args);
 
+		int threads = getThreads(parser);
+
+		WorkQueue workQueue = new WorkQueue(threads);
 		InvertedIndex invertedIndex = new InvertedIndex();
-		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
-		WorkQueue workQueue = new WorkQueue(getThreads(parser));
+		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"), threads);
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
-			FileHandler fileHandler = new FileHandler(invertedIndex, workQueue);
+			FileHandler fileHandler = new FileHandler(invertedIndex, threads);
 			try {
 				if (text != null)
 					fileHandler.fillInvertedIndex(text);

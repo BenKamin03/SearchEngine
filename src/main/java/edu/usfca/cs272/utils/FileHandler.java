@@ -34,9 +34,9 @@ public class FileHandler {
       *
       * @param invertedIndex the invertedIndex
       */
-     public FileHandler(InvertedIndex invertedIndex, WorkQueue workQueue) {
+     public FileHandler(InvertedIndex invertedIndex, int threads) {
           this.invertedIndex = invertedIndex;
-          this.workQueue = workQueue;
+          workQueue = new WorkQueue(threads);
      }
 
      /**
@@ -48,7 +48,6 @@ public class FileHandler {
      public void fillInvertedIndex(Path textPath) throws IOException {
           fillHash(textPath, true);
           workQueue.join();
-          System.out.println("Pending: " + workQueue.getPending());
      }
 
      /**
@@ -82,7 +81,7 @@ public class FileHandler {
                          try {
                               handleFile(input);
                          } catch (IOException e) {
-                              e.printStackTrace();
+                              System.out.println("IO Exception in File: " + input.toString());
                          }
                     });
                }
