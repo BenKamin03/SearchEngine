@@ -133,6 +133,8 @@ public class Driver {
 	 * @return the number of threads to use
 	 */
 	private static int getThreads(ArgumentParser parser) {
+		if (!parser.hasFlag("-threads"))
+			return 1;
 		int threads = parser.getInteger("-threads");
 		if (threads > 5 || threads < 1) {
 			return 5;
