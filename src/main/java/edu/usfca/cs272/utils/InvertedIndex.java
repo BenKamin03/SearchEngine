@@ -26,6 +26,11 @@ import java.util.TreeMap;
 public class InvertedIndex {
 
      /**
+      * 
+      */
+     private final MultiReaderLock indexesLock, countsLock;
+
+     /**
       * private final indexes
       */
      private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
@@ -41,6 +46,8 @@ public class InvertedIndex {
      public InvertedIndex() {
           indexes = new TreeMap<>();
           counts = new TreeMap<>();
+          indexesLock = new MultiReaderLock();
+          countsLock = new MultiReaderLock();
      }
 
      /**
@@ -87,15 +94,16 @@ public class InvertedIndex {
           Collections.sort(entries);
           return entries;
      }
-     
+
      /**
       * queries the word in the locations
       * 
       * @param wordLocations the locations of the word
-      * @param entries the entries of QueryEntries
-      * @param lookup the lookup table
+      * @param entries       the entries of QueryEntries
+      * @param lookup        the lookup table
       */
-     private void queryWord(TreeMap<String, TreeSet<Integer>> wordLocations, List<QueryEntry> entries, Map<String, QueryEntry> lookup) {
+     private void queryWord(TreeMap<String, TreeSet<Integer>> wordLocations, List<QueryEntry> entries,
+               Map<String, QueryEntry> lookup) {
           if (wordLocations != null) {
                var locationIterator = wordLocations.entrySet().iterator();
                while (locationIterator.hasNext()) {
@@ -138,18 +146,40 @@ public class InvertedIndex {
       */
      public void addIndex(String word, String location, int index) {
           if (!hasPosition(word, location, index)) {
-               counts.compute(location, (key, val) -> {
-                    return (counts.containsKey(key) ? val : 0) + 1;
-               });
-               // counts.computeIfPresent(location, (key, val) -> {
-               // return val + 1;
-               // });
-               // counts.computeIfAbsent(location, (key) -> {
-               // return 1;
-               // });
+               countsLock.writeLock().lock();
+               try {
+                    counts.merge(location, 1, Integer::sum);
+               } finally {
+                    countsLock.writeLock().unlock();
+               }
 
-               indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
-                         .add(index);
+               indexesLock.writeLock().lock();
+               try {
+                    indexes.computeIfAbsent(word, k -> new TreeMap<>())
+                              .computeIfAbsent(location, k -> new TreeSet<>()).add(index);
+               } finally {
+                    indexesLock.writeLock().unlock();
+               }
+          }
+     }
+
+     public void addIndex(TreeMap<String, TreeSet<Integer>> file, String fileName) {
+          indexesLock.writeLock().lock();
+          try {
+               var words = file.entrySet().iterator();
+               int count = 0;
+               while (words.hasNext()) {
+                    Entry<String, TreeSet<Integer>> currWord = words.next();
+                    if (file.get(currWord.getKey()).size() > 0) {
+                         indexes.computeIfAbsent(currWord.getKey(), k -> new TreeMap<>())
+                                   .computeIfAbsent(fileName, k -> new TreeSet<>()).addAll(currWord.getValue());
+                         count += currWord.getValue().size();
+                    }
+               }
+               if (count > 0)
+                    counts.put(fileName, count);
+          } finally {
+               indexesLock.writeLock().unlock();
           }
      }
 
@@ -159,7 +189,12 @@ public class InvertedIndex {
       * @return the list of words in the index
       */
      public Set<String> getWords() {
-          return Collections.unmodifiableSet(indexes.keySet());
+          indexesLock.readLock().lock();
+          try {
+               return Collections.unmodifiableSet(indexes.keySet());
+          } finally {
+               indexesLock.readLock().unlock();
+          }
      }
 
      /**
@@ -169,8 +204,13 @@ public class InvertedIndex {
       * @return the list of locations
       */
      public Set<String> getLocationsOfWord(String word) {
-          TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-          return wordInIndex != null ? Collections.unmodifiableSet(wordInIndex.keySet()) : Collections.emptySet();
+          indexesLock.readLock().lock();
+          try {
+               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
+               return wordInIndex != null ? Collections.unmodifiableSet(wordInIndex.keySet()) : Collections.emptySet();
+          } finally {
+               indexesLock.readLock().unlock();
+          }
      }
 
      /**
@@ -181,14 +221,19 @@ public class InvertedIndex {
       * @return the list of instances
       */
      public Set<Integer> getInstancesOfWordInLocation(String word, String location) {
-          TreeMap<String, TreeSet<Integer>> wordMap = indexes.get(word);
-          if (wordMap != null) {
-               TreeSet<Integer> instances = wordMap.get(location);
-               if (instances != null) {
-                    return Collections.unmodifiableSet(instances);
+          indexesLock.readLock().lock();
+          try {
+               TreeMap<String, TreeSet<Integer>> wordMap = indexes.get(word);
+               if (wordMap != null) {
+                    TreeSet<Integer> instances = wordMap.get(location);
+                    if (instances != null) {
+                         return Collections.unmodifiableSet(instances);
+                    }
                }
+               return Collections.emptySet();
+          } finally {
+               indexesLock.readLock().unlock();
           }
-          return Collections.emptySet();
      }
 
      /**
@@ -200,7 +245,12 @@ public class InvertedIndex {
       *         in the indexes
       */
      public boolean hasWord(String word) {
-          return indexes.containsKey(word);
+          indexesLock.readLock().lock();
+          try {
+               return indexes.containsKey(word);
+          } finally {
+               indexesLock.readLock().unlock();
+          }
      }
 
      /**
@@ -213,8 +263,13 @@ public class InvertedIndex {
       *         word is not found in the index
       */
      public boolean hasLocation(String word, String location) {
-          TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-          return wordInIndex != null && wordInIndex.containsKey(location);
+          indexesLock.readLock().lock();
+          try {
+               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
+               return wordInIndex != null && wordInIndex.containsKey(location);
+          } finally {
+               indexesLock.readLock().unlock();
+          }
      }
 
      /**
@@ -226,12 +281,17 @@ public class InvertedIndex {
       * @return whether the position exists in the instances of a word in a location
       */
      public boolean hasPosition(String word, String location, int position) {
-          TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-          if (wordInIndex != null) {
-               TreeSet<Integer> locationInWord = wordInIndex.get(location);
-               return locationInWord != null && locationInWord.contains(position);
+          indexesLock.readLock().lock();
+          try {
+               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
+               if (wordInIndex != null) {
+                    TreeSet<Integer> locationInWord = wordInIndex.get(location);
+                    return locationInWord != null && locationInWord.contains(position);
+               }
+               return false;
+          } finally {
+               indexesLock.readLock().unlock();
           }
-          return false;
      }
 
      /**
@@ -241,7 +301,12 @@ public class InvertedIndex {
       * @throws IOException io exception
       */
      public void writeIndex(Path path) throws IOException {
-          JsonWriter.writeObjectMap(indexes, path);
+          indexesLock.readLock().lock();
+          try {
+               JsonWriter.writeObjectMap(indexes, path);
+          } finally {
+               indexesLock.readLock().unlock();
+          }
      }
 
      /**
@@ -251,7 +316,12 @@ public class InvertedIndex {
       * @return A TreeMap of counts keyed by category.
       */
      public Map<String, Integer> getCounts() {
-          return Collections.unmodifiableMap(counts);
+          countsLock.readLock().lock();
+          try {
+               return Collections.unmodifiableMap(counts);
+          } finally {
+               countsLock.readLock().unlock();
+          }
      }
 
      /**
@@ -261,7 +331,12 @@ public class InvertedIndex {
       * @return the word count
       */
      public int getCountsInLocation(String location) {
-          return counts.getOrDefault(location, 0);
+          countsLock.readLock().lock();
+          try {
+               return counts.getOrDefault(location, 0);
+          } finally {
+               countsLock.readLock().unlock();
+          }
      }
 
      /**
@@ -273,14 +348,12 @@ public class InvertedIndex {
       *         or not
       */
      public boolean hasCounts(String file) {
-          return counts.containsKey(file);
-     }
-
-     /**
-      * Clears the counts.
-      */
-     public void clearCounts() {
-          counts.clear();
+          countsLock.readLock().lock();
+          try {
+               return counts.containsKey(file);
+          } finally {
+               countsLock.readLock().unlock();
+          }
      }
 
      /**
@@ -290,7 +363,12 @@ public class InvertedIndex {
       * @return the keys of the counts
       */
      public Set<String> getLocations() {
-          return getCounts().keySet();
+          countsLock.readLock().lock();
+          try {
+               return getCounts().keySet();
+          } finally {
+               countsLock.readLock().unlock();
+          }
      }
 
      /**

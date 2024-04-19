@@ -11,6 +11,7 @@ import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
 import edu.usfca.cs272.utils.QueryHandler;
+import edu.usfca.cs272.utils.WorkQueue;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -56,13 +57,14 @@ public class Driver {
 
 		InvertedIndex invertedIndex = new InvertedIndex();
 		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
+		WorkQueue workQueue = new WorkQueue(getThreads(parser));
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
-			FileHandler fileHandler = new FileHandler(invertedIndex);
+			FileHandler fileHandler = new FileHandler(invertedIndex, workQueue);
 			try {
-				if (text != null) 
-					fileHandler.fillInvertedIndex(text); 
+				if (text != null)
+					fileHandler.fillInvertedIndex(text);
 				else
 					System.out.println("The path given by -text is null");
 			} catch (FileNotFoundException fnf) {
@@ -122,5 +124,19 @@ public class Driver {
 				System.out.println("IO Error with -results flag");
 			}
 		}
+	}
+
+	/**
+	 * Used to get the value of the -threads tag
+	 * 
+	 * @param parser the parser
+	 * @return the number of threads to use
+	 */
+	private static int getThreads(ArgumentParser parser) {
+		int threads = parser.getInteger("-threads");
+		if (threads > 5 || threads < 1) {
+			return 5;
+		}
+		return threads;
 	}
 }

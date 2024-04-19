@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
@@ -24,30 +26,35 @@ public class FileHandler {
       */
      private final InvertedIndex invertedIndex;
 
+     private final WorkQueue workQueue;
+
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
       * outputs it to a json
-      * 
+      *
       * @param invertedIndex the invertedIndex
       */
-     public FileHandler(InvertedIndex invertedIndex) {
+     public FileHandler(InvertedIndex invertedIndex, WorkQueue workQueue) {
           this.invertedIndex = invertedIndex;
+          this.workQueue = workQueue;
      }
 
      /**
       * Fills the inverted index with the contents of the file.
-      * 
-      * @param textPath      - Path to the text file to be hashed
+      *
+      * @param textPath - Path to the text file to be hashed
       * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath) throws IOException {
           fillHash(textPath, true);
+          workQueue.join();
+          System.out.println("Pending: " + workQueue.getPending());
      }
 
      /**
       * Fills Hash with stem info for Path p. This is used to generate the Hash from
       * files and directories
-      * 
+      *
       * @param input       the input path
       * @param requireText whether the hash should include text files
       * @throws IOException an IO exception
@@ -71,7 +78,13 @@ public class FileHandler {
           } else {
                // Path is a File --> Base Case
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
-                    handleFile(input, invertedIndex);
+                    workQueue.execute(() -> {
+                         try {
+                              handleFile(input);
+                         } catch (IOException e) {
+                              e.printStackTrace();
+                         }
+                    });
                }
           }
      }
@@ -79,59 +92,36 @@ public class FileHandler {
      /**
       * Adds a file to the index. This is called by the IndexWriter when it detects a
       * stem file that is to be added to the index
-      * 
-      * @param file - the path to the
-      * @param invertedIndex - the inverted index
-      * @throws IOException an IO exception
-      */
-     public static void handleFile(Path file, InvertedIndex invertedIndex) throws IOException {
-          try (BufferedReader reader = Files.newBufferedReader(file, UTF_8)) {
-               String line = null;
-               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
-               int i = 1;
-               String fileString = file.toString();
-
-               while ((line = reader.readLine()) != null) {
-                    String[] parsedLine = FileStemmer.parse(line);
-
-                    for (String word : parsedLine) {
-                         invertedIndex.addIndex(stemmer.stem(word).toString(), fileString, i++);
-                    }
-               }
-          }
-     }
-
-     /**
-      * Adds a file to the index. This is called by the IndexWriter when it detects a
-      * stem file that is to be added to the index
-      * 
+      *
       * @param file - the path to the
       * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
+          TreeMap<String, TreeSet<Integer>> fileInfo = new TreeMap<>(); //Word -> List of Occurance
           try (BufferedReader reader = Files.newBufferedReader(file, UTF_8)) {
                String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
                int i = 1;
                String fileString = file.toString();
-
                while ((line = reader.readLine()) != null) {
                     String[] parsedLine = FileStemmer.parse(line);
-
                     for (String word : parsedLine) {
-                         invertedIndex.addIndex(stemmer.stem(word).toString(), fileString, i++);
+                         // invertedIndex.addIndex(stemmer.stem(word).toString(), fileString, i++);
+                         String stem = stemmer.stem(word).toString();
+                         fileInfo.computeIfAbsent(stem, (key) -> new TreeSet<>());
+                         fileInfo.get(stem).add(i++);
                     }
                }
           }
+          invertedIndex.addIndex(fileInfo, file.toString());
      }
 
      /**
       * Filters a path to see if it ends with one of the given extensions. This is
       * used to avoid file names that are inappropriate for the user's file system.
-      * 
+      *
       * @param p          - The path to check. Must not be null.
       * @param extensions - An array of extensions. May be null.
-      * 
       * @return true if the path ends with one of the given extensions false
       *         otherwise. Note that it is possible for this method to return false
       *         even if the path doesn't have a file
