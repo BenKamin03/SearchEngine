@@ -26,9 +26,14 @@ import java.util.TreeMap;
 public class InvertedIndex {
 
      /**
-      * 
+      * the lock for the indexes
       */
-     private final MultiReaderLock indexesLock, countsLock;
+     private final MultiReaderLock indexesLock;
+
+     /**
+      * the lock for the counts
+      */
+     private final MultiReaderLock countsLock;
 
      /**
       * private final indexes
@@ -86,10 +91,18 @@ public class InvertedIndex {
           Map<String, QueryEntry> lookup = new HashMap<>();
 
           for (String stem : queries) {
-
-               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet = indexes.tailMap(stem).entrySet()
-                         .iterator();
+               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet;
                Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
+
+               indexesLock.readLock().lock();
+               try {
+                    entrySet = indexes.tailMap(stem)
+                              .entrySet()
+                              .iterator();
+               } finally {
+                    indexesLock.readLock().unlock();
+               }
+               
 
                while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
                     queryWord(indexes.get(curr.getKey()), entries, lookup);
@@ -168,6 +181,12 @@ public class InvertedIndex {
           }
      }
 
+     /**
+      * Adds the index given a map of Word to Instances
+      * 
+      * @param file     the file's words and instances
+      * @param fileName the file name
+      */
      public void addIndex(TreeMap<String, TreeSet<Integer>> file, String fileName) {
           indexesLock.writeLock().lock();
           countsLock.writeLock().lock();
@@ -404,7 +423,7 @@ public class InvertedIndex {
           } finally {
                indexesLock.readLock().unlock();
           }
-          
+
           builder.append("Counts:\n");
 
           countsLock.readLock().lock();

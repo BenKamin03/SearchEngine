@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
+import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
@@ -31,6 +32,9 @@ public class QueryHandler {
       */
      private final TreeMap<String, List<QueryEntry>> query;
 
+     /**
+      * the lock for the query
+      */
      private final MultiReaderLock queryLock;
 
      /**
@@ -38,6 +42,9 @@ public class QueryHandler {
       */
      private final Function<Set<String>, List<QueryEntry>> searchFunction;
 
+     /**
+      * the work queue
+      */
      private final WorkQueue workQueue;
 
      /**
@@ -45,6 +52,7 @@ public class QueryHandler {
       * 
       * @param invertedIndex the invertedIndex
       * @param partial       whether the search should include partial matches
+      * @param threads       the number of threads to use in the work queue
       */
      public QueryHandler(InvertedIndex invertedIndex, boolean partial, int threads) {
           query = new TreeMap<>();
@@ -61,22 +69,29 @@ public class QueryHandler {
       */
      public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
-               String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+               handleQueries(path, reader, stemmer);
+               System.out.println(workQueue.getPending());
+               workQueue.join();
+          }
+     }
 
-               while ((line = reader.readLine()) != null) {
-                    String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
+     public void handleQueries(Path path, BufferedReader reader, Stemmer stemmer) throws IOException {
+          String line = null;
+          while ((line = reader.readLine()) != null) {
+               final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
+               final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
+               workQueue.execute(() -> {
                     if (key.length() > 0) {
                          queryLock.writeLock().lock();
                          try {
-                              query.put(key, getQueryResutls(line, stemmer));
+                              query.put(key, getQueryResults(val));
                          } finally {
                               queryLock.writeLock().unlock();
                          }
                     }
-
-               }
-               workQueue.join();
+               });
+               System.out.println(workQueue.getPending());
           }
      }
 
@@ -87,6 +102,7 @@ public class QueryHandler {
       */
      public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
+
      }
 
      /**
@@ -120,7 +136,6 @@ public class QueryHandler {
                          queryLock.writeLock().unlock();
                     }
                }
-               System.out.println(stems);
           });
      }
 
@@ -182,21 +197,12 @@ public class QueryHandler {
           }
      }
 
-     /**
-      * gets the query results for a line of search and a stemmer
-      * 
-      * @param line    the line of search
-      * @param stemmer the stemmer
-      * @return the list of queries
-      */
-     public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
-          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-
+     public List<QueryEntry> getQueryResults(Set<String> stems) {
           if (stems.size() > 0) {
                String key = getSearchFromWords(stems);
-               queryLock.readLock().lock();
                List<QueryEntry> val;
 
+               queryLock.readLock().lock();
                try {
                     val = query.get(key);
                } finally {
@@ -206,10 +212,23 @@ public class QueryHandler {
                if (val == null) {
                     val = searchFunction.apply(stems);
                }
+
+               // System.out.println(toString());
                return val;
           }
 
           return Collections.emptyList();
+     }
+
+     /**
+      * gets the query results for a line of search and a stemmer
+      * 
+      * @param line    the line of search
+      * @param stemmer the stemmer
+      * @return the list of queries
+      */
+     public List<QueryEntry> getQueryResults(String line, Stemmer stemmer) {
+          return getQueryResults(FileStemmer.uniqueStems(line, stemmer));
      }
 
      /**
@@ -219,6 +238,6 @@ public class QueryHandler {
       * @return the list of queries
       */
      public List<QueryEntry> getQueryResults(String line) {
-          return getQueryResutls(line, new SnowballStemmer(ENGLISH));
+          return getQueryResults(line, new SnowballStemmer(ENGLISH));
      }
 }

@@ -57,7 +57,6 @@ public class Driver {
 
 		int threads = getThreads(parser);
 
-		WorkQueue workQueue = new WorkQueue(threads);
 		InvertedIndex invertedIndex = new InvertedIndex();
 		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"), threads);
 

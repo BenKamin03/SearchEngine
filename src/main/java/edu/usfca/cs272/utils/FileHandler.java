@@ -26,6 +26,9 @@ public class FileHandler {
       */
      private final InvertedIndex invertedIndex;
 
+     /**
+      * the work queue
+      */
      private final WorkQueue workQueue;
 
      /**
@@ -33,6 +36,7 @@ public class FileHandler {
       * outputs it to a json
       *
       * @param invertedIndex the invertedIndex
+      * @param threads the number of threads to use in the work queue
       */
      public FileHandler(InvertedIndex invertedIndex, int threads) {
           this.invertedIndex = invertedIndex;
@@ -101,7 +105,6 @@ public class FileHandler {
                String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
                int i = 1;
-               String fileString = file.toString();
                while ((line = reader.readLine()) != null) {
                     String[] parsedLine = FileStemmer.parse(line);
                     for (String word : parsedLine) {

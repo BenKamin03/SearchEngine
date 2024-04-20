@@ -27,7 +27,10 @@ public class WorkQueue {
 
 	/** Queue of pending work (or tasks). */
 	private final LinkedList<Runnable> tasks;
-
+	
+	/**
+	 * the key for pending
+	 */
 	private final Object pendingKey = new Object();
 
 	/** Pending work */
@@ -97,7 +100,12 @@ public class WorkQueue {
 			return Collections.unmodifiableList(tasks);
 		}
 	}
-
+	
+	/**
+	 * Method used for getting the amount of pending work left in the queue
+	 * 
+	 * @return the pending work
+	 */
 	public int getPending() {
 		synchronized (pendingKey) {
 			return pending;
