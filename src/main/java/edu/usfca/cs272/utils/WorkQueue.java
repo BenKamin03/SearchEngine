@@ -138,7 +138,6 @@ public class WorkQueue {
 		synchronized (tasks) {
 			while (!tasks.isEmpty()) {
 				try {
-					System.out.println("Waiting");
 					tasks.wait();
 				} catch (InterruptedException e) {
 					// Handle interruption if necessary

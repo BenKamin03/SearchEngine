@@ -71,7 +71,6 @@ public class QueryHandler {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
                handleQueries(path, reader, stemmer);
-               System.out.println(workQueue.getPending());
                workQueue.join();
           }
      }
@@ -91,7 +90,6 @@ public class QueryHandler {
                          }
                     }
                });
-               System.out.println(workQueue.getPending());
           }
      }
 
@@ -213,7 +211,6 @@ public class QueryHandler {
                     val = searchFunction.apply(stems);
                }
 
-               // System.out.println(toString());
                return val;
           }
 
