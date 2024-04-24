@@ -54,7 +54,7 @@ public class QueryHandler {
       * @param partial       whether the search should include partial matches
       * @param threads       the number of threads to use in the work queue
       */
-     public QueryHandler(InvertedIndex invertedIndex, boolean partial, int threads) {
+     public QueryHandler(InvertedIndex invertedIndex, boolean partial, int threads) { // TODO Pass in the work queue
           query = new TreeMap<>();
           searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
           workQueue = new WorkQueue(threads);
@@ -78,13 +78,13 @@ public class QueryHandler {
      public void handleQueries(Path path, BufferedReader reader, Stemmer stemmer) throws IOException {
           String line = null;
           while ((line = reader.readLine()) != null) {
-               final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
+               final Set<String> val = FileStemmer.uniqueStems(line, stemmer); // TODO Move stemming into the task too... but use a new local stemmer instance
                final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
                workQueue.execute(() -> {
                     if (key.length() > 0) {
                          queryLock.writeLock().lock();
                          try {
-                              query.put(key, getQueryResults(val));
+                              query.put(key, getQueryResults(val)); // TODO Search is happening inside of a write lock
                          } finally {
                               queryLock.writeLock().unlock();
                          }
