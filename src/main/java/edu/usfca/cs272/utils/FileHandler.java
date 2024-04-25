@@ -2,6 +2,7 @@ package edu.usfca.cs272.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TreeMap;
@@ -38,7 +39,8 @@ public class FileHandler {
       * @param invertedIndex the invertedIndex
       * @param threads the number of threads to use in the work queue
       */
-     public FileHandler(InvertedIndex invertedIndex, int threads) {
+     // TODO Multithreaded version needs to work with a thread-safe index only
+     public FileHandler(InvertedIndex invertedIndex, int threads) { // TODO Pass in a work queue instead of # threads
           this.invertedIndex = invertedIndex;
           workQueue = new WorkQueue(threads);
      }
@@ -51,7 +53,7 @@ public class FileHandler {
       */
      public void fillInvertedIndex(Path textPath) throws IOException {
           fillHash(textPath, true);
-          workQueue.join();
+          workQueue.join(); // TODO Call finish here and join/shutdown in Driver
      }
 
      /**
@@ -81,11 +83,12 @@ public class FileHandler {
           } else {
                // Path is a File --> Base Case
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
-                    workQueue.execute(() -> {
+                    workQueue.execute(() -> { // TODO Create a task class instead
                          try {
                               handleFile(input);
                          } catch (IOException e) {
-                              System.out.println("IO Exception in File: " + input.toString());
+                              System.out.println("IO Exception in File: " + input.toString()); // TODO Remove
+                              // TODO throw new UncheckedIOException(e);
                          }
                     });
                }
@@ -100,6 +103,12 @@ public class FileHandler {
       * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
+    	 /* TODO 
+    	InvertedIndex local = ...
+    	handle file into local
+    	invertedIndex.addIndex(local); <-- can start with looping one at a time, but it will be faster to reuse what you can
+    	*/
+    	 
           TreeMap<String, TreeSet<Integer>> fileInfo = new TreeMap<>(); //Word -> List of Occurance
           try (BufferedReader reader = Files.newBufferedReader(file, UTF_8)) {
                String line = null;

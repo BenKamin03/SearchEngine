@@ -22,6 +22,12 @@ import edu.usfca.cs272.utils.WorkQueue;
  * @version Spring 2024
  */
 public class Driver {
+	
+	/*
+	 * TODO Restore the single threaded classes from project 2 and move the threaded stuff into new classes
+	 * 
+	 * Don't worry about duplicate logic or inheritance except for the index
+	 */
 
 	/**
 	 * Initializes the classes necessary based on the provided command-line
