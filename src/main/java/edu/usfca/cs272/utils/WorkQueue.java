@@ -136,7 +136,7 @@ public class WorkQueue {
 	public void finish() {
 		log.debug(System.currentTimeMillis() + " finishing");
 		synchronized (tasks) {
-			while (!tasks.isEmpty()) {
+			while (pending != 0) {
 				try {
 					tasks.wait();
 				} catch (InterruptedException e) {
@@ -147,7 +147,6 @@ public class WorkQueue {
 					return; // Exit method on interruption
 				}
 			}
-
 		}
 	}
 

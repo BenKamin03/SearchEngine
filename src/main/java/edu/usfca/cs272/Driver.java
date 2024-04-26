@@ -10,6 +10,9 @@ import java.util.Arrays;
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
+import edu.usfca.cs272.utils.MultiThreadedFileHandler;
+import edu.usfca.cs272.utils.MultiThreadedInvertedIndex;
+import edu.usfca.cs272.utils.MultiThreadedQueryHandler;
 import edu.usfca.cs272.utils.QueryHandler;
 import edu.usfca.cs272.utils.WorkQueue;
 
@@ -22,9 +25,10 @@ import edu.usfca.cs272.utils.WorkQueue;
  * @version Spring 2024
  */
 public class Driver {
-	
+
 	/*
-	 * TODO Restore the single threaded classes from project 2 and move the threaded stuff into new classes
+	 * TODO Restore the single threaded classes from project 2 and move the threaded
+	 * stuff into new classes
 	 * 
 	 * Don't worry about duplicate logic or inheritance except for the index
 	 */
@@ -61,14 +65,26 @@ public class Driver {
 	private static void run(String[] args) {
 		ArgumentParser parser = new ArgumentParser(args);
 
-		int threads = getThreads(parser);
+		InvertedIndex invertedIndex;
+		QueryHandler queryHandler;
+		FileHandler fileHandler;
 
-		InvertedIndex invertedIndex = new InvertedIndex();
-		QueryHandler queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"), threads);
+		if (parser.hasFlag("-threads")) {
+			int threads = getThreads(parser);
+			WorkQueue workQueue = new WorkQueue(threads);
+
+			invertedIndex = new MultiThreadedInvertedIndex();
+			queryHandler = new MultiThreadedQueryHandler(invertedIndex, parser.hasFlag("-partial"), workQueue);
+			fileHandler = new MultiThreadedFileHandler(invertedIndex, workQueue);
+		} else {
+			invertedIndex = new InvertedIndex();
+			queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
+			fileHandler = new FileHandler(invertedIndex);
+		}
 
 		if (parser.hasFlag("-text")) {
 			Path text = parser.getPath("-text");
-			FileHandler fileHandler = new FileHandler(invertedIndex, threads);
+
 			try {
 				if (text != null)
 					fileHandler.fillInvertedIndex(text);

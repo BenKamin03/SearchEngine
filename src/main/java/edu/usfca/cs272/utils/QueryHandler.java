@@ -13,7 +13,6 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
-import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
@@ -30,12 +29,7 @@ public class QueryHandler {
      /**
       * The query
       */
-     private final TreeMap<String, List<QueryEntry>> query;
-
-     /**
-      * the lock for the query
-      */
-     private final MultiReaderLock queryLock;
+     protected final TreeMap<String, List<QueryEntry>> query;
 
      /**
       * the search function
@@ -43,22 +37,14 @@ public class QueryHandler {
      private final Function<Set<String>, List<QueryEntry>> searchFunction;
 
      /**
-      * the work queue
-      */
-     private final WorkQueue workQueue;
-
-     /**
       * The constructor for a QueryHandler
       * 
       * @param invertedIndex the invertedIndex
       * @param partial       whether the search should include partial matches
-      * @param threads       the number of threads to use in the work queue
       */
-     public QueryHandler(InvertedIndex invertedIndex, boolean partial, int threads) { // TODO Pass in the work queue
+     public QueryHandler(InvertedIndex invertedIndex, boolean partial) {
           query = new TreeMap<>();
           searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
-          workQueue = new WorkQueue(threads);
-          queryLock = new MultiReaderLock();
      }
 
      /**
@@ -69,27 +55,13 @@ public class QueryHandler {
       */
      public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
+               String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
-               handleQueries(path, reader, stemmer);
-               workQueue.join();
-          }
-     }
 
-     public void handleQueries(Path path, BufferedReader reader, Stemmer stemmer) throws IOException {
-          String line = null;
-          while ((line = reader.readLine()) != null) {
-               final Set<String> val = FileStemmer.uniqueStems(line, stemmer); // TODO Move stemming into the task too... but use a new local stemmer instance
-               final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
-               workQueue.execute(() -> {
-                    if (key.length() > 0) {
-                         queryLock.writeLock().lock();
-                         try {
-                              query.put(key, getQueryResults(val)); // TODO Search is happening inside of a write lock
-                         } finally {
-                              queryLock.writeLock().unlock();
-                         }
-                    }
-               });
+               while ((line = reader.readLine()) != null) {
+                    handleQueries(line, stemmer);
+               }
+
           }
      }
 
@@ -100,7 +72,6 @@ public class QueryHandler {
       */
      public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
-
      }
 
      /**
@@ -110,31 +81,17 @@ public class QueryHandler {
       * @param stemmer the stemmer
       */
      public void handleQueries(String line, SnowballStemmer stemmer) {
-          workQueue.execute(() -> {
-               TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-               if (stems.size() > 0) {
-                    String key = getSearchFromWords(stems);
-                    List<QueryEntry> val;
+          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+          if (stems.size() > 0) {
+               String key = getSearchFromWords(stems);
+               List<QueryEntry> val = query.get(key);
 
-                    queryLock.readLock().lock();
-                    try {
-                         val = query.get(key);
-                    } finally {
-                         queryLock.readLock().unlock();
-                    }
+               query.put(key, val);
 
-                    queryLock.writeLock().lock();
-                    try {
-                         if (val == null) {
-                              query.put(key, searchFunction.apply(stems));
-                         } else {
-                              query.put(key, val);
-                         }
-                    } finally {
-                         queryLock.writeLock().unlock();
-                    }
+               if (val == null) {
+                    query.put(key, searchFunction.apply(stems));
                }
-          });
+          }
      }
 
      /**
@@ -154,22 +111,12 @@ public class QueryHandler {
       * @throws IOException an IO Exception
       */
      public void writeQuery(Path path) throws IOException {
-          queryLock.readLock().lock();
-          try {
-               JsonWriter.writeQuery(query, path);
-          } finally {
-               queryLock.readLock().unlock();
-          }
+          JsonWriter.writeQuery(query, path);
      }
 
      @Override
      public String toString() {
-          queryLock.readLock().lock();
-          try {
-               return JsonWriter.writeQuery(query);
-          } finally {
-               queryLock.readLock().unlock();
-          }
+          return JsonWriter.writeQuery(query);
      }
 
      /**
@@ -187,47 +134,35 @@ public class QueryHandler {
       * @return the query's keyset
       */
      public Set<String> getQueryLines() {
-          queryLock.readLock().lock();
-          try {
-               return Collections.unmodifiableSet(query.keySet());
-          } finally {
-               queryLock.readLock().unlock();
-          }
+          return Collections.unmodifiableSet(query.keySet());
      }
+     
+     /**
+      * gets the query results for a line of search and a stemmer
+      * 
+      * @param line the line of search
+      * @param stemmer the stemmer
+      * @return the list of queries
+      */
+     public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
+          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
-     public List<QueryEntry> getQueryResults(Set<String> stems) {
           if (stems.size() > 0) {
                String key = getSearchFromWords(stems);
-               List<QueryEntry> val;
+               List<QueryEntry> val = query.get(key);
 
-               queryLock.readLock().lock();
-               try {
-                    val = query.get(key);
-               } finally {
-                    queryLock.readLock().unlock();
-               }
+               query.put(key, val);
 
                if (val == null) {
-                    val = searchFunction.apply(stems);
+                    query.put(key, searchFunction.apply(stems));
                }
 
                return val;
           }
-
+          
           return Collections.emptyList();
      }
-
-     /**
-      * gets the query results for a line of search and a stemmer
-      * 
-      * @param line    the line of search
-      * @param stemmer the stemmer
-      * @return the list of queries
-      */
-     public List<QueryEntry> getQueryResults(String line, Stemmer stemmer) {
-          return getQueryResults(FileStemmer.uniqueStems(line, stemmer));
-     }
-
+     
      /**
       * gets the query results for a line
       * 
@@ -235,6 +170,6 @@ public class QueryHandler {
       * @return the list of queries
       */
      public List<QueryEntry> getQueryResults(String line) {
-          return getQueryResults(line, new SnowballStemmer(ENGLISH));
+          return getQueryResutls(line, new SnowballStemmer(ENGLISH));
      }
 }
