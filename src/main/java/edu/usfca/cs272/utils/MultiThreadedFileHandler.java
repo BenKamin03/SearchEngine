@@ -86,7 +86,7 @@ public class MultiThreadedFileHandler extends FileHandler {
      @Override
      public void handleFile(Path file) throws IOException {
           InvertedIndex local = new InvertedIndex();
-          super.handleFile(file, local);
+          FileHandler.handleFile(file, local);
           invertedIndex.addIndex(local, file.toString());
      }
 
