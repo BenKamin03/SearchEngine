@@ -37,7 +37,7 @@ public class FileHandler {
      /**
       * Fills the inverted index with the contents of the file.
       * 
-      * @param textPath      - Path to the text file to be hashed
+      * @param textPath - Path to the text file to be hashed
       * @throws IOException the IO exception
       */
      public void fillInvertedIndex(Path textPath) throws IOException {
@@ -80,7 +80,7 @@ public class FileHandler {
       * Adds a file to the index. This is called by the IndexWriter when it detects a
       * stem file that is to be added to the index
       * 
-      * @param file - the path to the
+      * @param file          - the path to the
       * @param invertedIndex - the inverted index
       * @throws IOException an IO exception
       */

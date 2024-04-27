@@ -710,8 +710,8 @@ public class JsonWriter {
 	 * Writes the query
 	 * 
 	 * @param elements the elements
-	 * @param writer the writer
-	 * @param indent the indentation
+	 * @param writer   the writer
+	 * @param indent   the indentation
 	 * @throws IOException an io exception
 	 */
 	public static void writeQuery(Map<String, ? extends Collection<? extends QueryEntry>> elements,

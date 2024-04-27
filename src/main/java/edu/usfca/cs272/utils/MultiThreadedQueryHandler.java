@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 import opennlp.tools.stemmer.Stemmer;
@@ -40,7 +39,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * 
       * @param invertedIndex the invertedIndex
       * @param partial       whether the search should include partial matches
-      * @param threads       the number of threads to use in the work queue
+      * @param workQueue     the work queue
       */
      public MultiThreadedQueryHandler(InvertedIndex invertedIndex, boolean partial, WorkQueue workQueue) {
           super(invertedIndex, partial);
@@ -54,6 +53,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param path the input path
       * @throws IOException an IO exception
       */
+     @Override
      public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                handleQueries(path, reader);
@@ -61,6 +61,13 @@ public class MultiThreadedQueryHandler extends QueryHandler {
           }
      }
 
+     /**
+      * Handles the queries given a path and a reader
+      * 
+      * @param path   the path
+      * @param reader the reader
+      * @throws IOException an IO exception
+      */
      public void handleQueries(Path path, BufferedReader reader) throws IOException {
           String line = null;
           while ((line = reader.readLine()) != null) {
@@ -73,6 +80,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * 
       * @param line the line
       */
+     @Override
      public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
 
@@ -84,32 +92,21 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param line    the line
       * @param stemmer the stemmer
       */
+     @Override
      public void handleQueries(String line, SnowballStemmer stemmer) {
-          workQueue.execute(() -> {
-               TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-               if (stems.size() > 0) {
-                    String key = getSearchFromWords(stems);
-                    List<QueryEntry> val;
 
-                    queryLock.readLock().lock();
-                    try {
-                         val = query.get(key);
-                    } finally {
-                         queryLock.readLock().unlock();
-                    }
+          final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
+          final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
 
-                    queryLock.writeLock().lock();
-                    try {
-                         if (val == null) {
-                              query.put(key, super.getSearchFunction().apply(stems));
-                         } else {
-                              query.put(key, val);
-                         }
-                    } finally {
-                         queryLock.writeLock().unlock();
-                    }
+          if (key.length() > 0) {
+               List<QueryEntry> queryResults = getQueryResults(val, key);
+               queryLock.writeLock().lock();
+               try {
+                    query.put(key, queryResults);
+               } finally {
+                    queryLock.writeLock().unlock();
                }
-          });
+          }
      }
 
      /**
@@ -128,6 +125,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param path the output file
       * @throws IOException an IO Exception
       */
+     @Override
      public void writeQuery(Path path) throws IOException {
           queryLock.readLock().lock();
           try {
@@ -152,6 +150,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * 
       * @return the query's keyset
       */
+     @Override
      public Set<String> getQueryLines() {
           queryLock.readLock().lock();
           try {
@@ -161,6 +160,13 @@ public class MultiThreadedQueryHandler extends QueryHandler {
           }
      }
 
+     /**
+      * Gets the query results from a list of stems and the key
+      * 
+      * @param stems the stems
+      * @param key   the key
+      * @return the list of query entry matches
+      */
      public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
           if (stems.size() > 0) {
                List<QueryEntry> val;
@@ -200,34 +206,33 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param line the line
       * @return the list of queries
       */
+     @Override
      public List<QueryEntry> getQueryResults(String line) {
           return getQueryResults(line, new SnowballStemmer(ENGLISH));
      }
 
+     /**
+      * The task for a query
+      */
      public class QueryTask implements Runnable {
+          /**
+           * The line
+           */
+          private String line;
 
-          String line;
-
+          /**
+           * The constructor
+           * 
+           * @param line the line to parse
+           */
           public QueryTask(String line) {
                this.line = line;
           }
 
           @Override
           public void run() {
-               Stemmer stemmer = new SnowballStemmer(ENGLISH);
-
-               final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
-               final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
-
-               if (key.length() > 0) {
-                    List<QueryEntry> queryResults = getQueryResults(val, key);
-                    queryLock.writeLock().lock();
-                    try {
-                         query.put(key, queryResults);
-                    } finally {
-                         queryLock.writeLock().unlock();
-                    }
-               }
+               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+               handleQueries(line, stemmer);
           }
 
      }

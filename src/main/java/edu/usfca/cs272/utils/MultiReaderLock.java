@@ -215,7 +215,7 @@ public class MultiReaderLock {
 					while ((readers > 0 || writers > 0) && (!isActiveWriter())) {
 						lock.wait();
 					}
-		
+
 					writers++;
 					activeWriter = Thread.currentThread();
 				}

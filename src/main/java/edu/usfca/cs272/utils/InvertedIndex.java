@@ -148,20 +148,27 @@ public class InvertedIndex {
           }
      }
 
-     public void addIndex(String word, String location, Set<Integer> indecies) {
+     /**
+      * Adds to the index and count given a list of indices
+      * 
+      * @param word     the words
+      * @param location the location
+      * @param indices  the indices
+      */
+     public void addIndex(String word, String location, Set<Integer> indices) {
           TreeSet<Integer> instances = indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location,
                     k -> new TreeSet<>());
           int originalSize = instances.size();
-          instances.addAll(indecies);
+          instances.addAll(indices);
           int newSize = instances.size();
           counts.merge(location, newSize - originalSize, Integer::sum);
      }
 
      /**
-      * Adds the index given a map of Word to Instances
+      * Adds the indices of another InvertedIndex to this one
       * 
-      * @param file     the file's words and instances
-      * @param fileName the file name
+      * @param invertedIndex the invertedIndex
+      * @param location      the location
       */
      public void addIndex(InvertedIndex invertedIndex, String location) {
           var words = invertedIndex.getWords().iterator();

@@ -81,16 +81,10 @@ public class QueryHandler {
       * @param stemmer the stemmer
       */
      public void handleQueries(String line, SnowballStemmer stemmer) {
-          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-          if (stems.size() > 0) {
-               String key = getSearchFromWords(stems);
-               List<QueryEntry> val = query.get(key);
-
-               query.put(key, val);
-
-               if (val == null) {
-                    query.put(key, searchFunction.apply(stems));
-               }
+          Set<String> queries = FileStemmer.uniqueStems(line, stemmer);
+          if (queries.size() > 0) {
+               String key = getSearchFromWords(queries);
+               query.put(key, getQueryResults(queries, key));
           }
      }
 
@@ -136,33 +130,43 @@ public class QueryHandler {
      public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
-     
+
      /**
       * gets the query results for a line of search and a stemmer
       * 
-      * @param line the line of search
+      * @param line    the line of search
       * @param stemmer the stemmer
       * @return the list of queries
       */
-     public List<QueryEntry> getQueryResutls(String line, SnowballStemmer stemmer) {
+     public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
           if (stems.size() > 0) {
-               String key = getSearchFromWords(stems);
-               List<QueryEntry> val = query.get(key);
-
-               query.put(key, val);
-
-               if (val == null) {
-                    query.put(key, searchFunction.apply(stems));
-               }
-
-               return val;
+               return getQueryResults(stems, getSearchFromWords(stems));
           }
-          
+
           return Collections.emptyList();
      }
-     
+
+     /**
+      * gets the query results from a list of stems and a key
+      * 
+      * @param stems the stems
+      * @param key   the key
+      * @return the list of query results
+      */
+     public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
+          List<QueryEntry> val;
+
+          val = query.get(key);
+
+          if (val == null) {
+               val = searchFunction.apply(stems);
+          }
+
+          return val;
+     }
+
      /**
       * gets the query results for a line
       * 
@@ -170,6 +174,6 @@ public class QueryHandler {
       * @return the list of queries
       */
      public List<QueryEntry> getQueryResults(String line) {
-          return getQueryResutls(line, new SnowballStemmer(ENGLISH));
+          return getQueryResults(line, new SnowballStemmer(ENGLISH));
      }
 }

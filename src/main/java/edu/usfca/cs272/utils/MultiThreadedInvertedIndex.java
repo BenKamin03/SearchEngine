@@ -48,6 +48,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param queries the queries
       * @return the TreeSet of results
       */
+     @Override
      public List<QueryEntry> exactSearch(Set<String> queries) {
           Iterator<String> searchIterator = queries.iterator();
 
@@ -73,6 +74,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param queries the queries
       * @return the TreeSet of results
       */
+     @Override
      public List<QueryEntry> partialSearch(Set<String> queries) {
           List<QueryEntry> entries = new ArrayList<>();
           Map<String, QueryEntry> lookup = new HashMap<>();
@@ -132,6 +134,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param partial search type
       * @return the list of query entries
       */
+     @Override
      public List<QueryEntry> search(Set<String> queries, boolean partial) {
           if (partial) {
                return partialSearch(queries);
@@ -148,6 +151,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param location - the location of the word to add the index for
       * @param index    - the index to add to the index map
       */
+     @Override
      public void addIndex(String word, String location, int index) {
           if (!hasPosition(word, location, index)) {
                countsLock.writeLock().lock();
@@ -167,11 +171,13 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
           }
      }
 
+     @Override
      public void addIndex(String word, String location, Set<Integer> indecies) {
           indexesLock.writeLock().lock();
           int newSize, originalSize;
           try {
-               TreeSet<Integer> instances = indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>());
+               TreeSet<Integer> instances = indexes.computeIfAbsent(word, k -> new TreeMap<>())
+                         .computeIfAbsent(location, k -> new TreeSet<>());
                originalSize = instances.size();
                instances.addAll(indecies);
                newSize = instances.size();
@@ -188,11 +194,12 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      }
 
      /**
-      * Adds the index given a map of Word to Instances
+      * Adds the indices of another InvertedIndex to this one
       * 
-      * @param file     the file's words and instances
-      * @param fileName the file name
+      * @param invertedIndex the inverted index
+      * @param location      the location
       */
+     @Override
      public void addIndex(InvertedIndex invertedIndex, String location) {
           var words = invertedIndex.getWords().iterator();
           while (words.hasNext()) {
@@ -206,6 +213,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * 
       * @return the list of words in the index
       */
+     @Override
      public Set<String> getWords() {
           indexesLock.readLock().lock();
           try {
@@ -221,6 +229,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param word the word
       * @return the list of locations
       */
+     @Override
      public Set<String> getLocationsOfWord(String word) {
           indexesLock.readLock().lock();
           try {
@@ -238,6 +247,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param location the location
       * @return the list of instances
       */
+     @Override
      public Set<Integer> getInstancesOfWordInLocation(String word, String location) {
           indexesLock.readLock().lock();
           try {
@@ -262,6 +272,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @return true if the word is in the indexes false if not or if the word is not
       *         in the indexes
       */
+     @Override
      public boolean hasWord(String word) {
           indexesLock.readLock().lock();
           try {
@@ -280,6 +291,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @return true if found false otherwise. Note that false is returned if the
       *         word is not found in the index
       */
+     @Override
      public boolean hasLocation(String word, String location) {
           indexesLock.readLock().lock();
           try {
@@ -298,6 +310,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param position the position
       * @return whether the position exists in the instances of a word in a location
       */
+     @Override
      public boolean hasPosition(String word, String location, int position) {
           indexesLock.readLock().lock();
           try {
@@ -318,6 +331,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param path the output that
       * @throws IOException io exception
       */
+     @Override
      public void writeIndex(Path path) throws IOException {
           indexesLock.readLock().lock();
           try {
@@ -333,6 +347,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * 
       * @return A TreeMap of counts keyed by category.
       */
+     @Override
      public Map<String, Integer> getCounts() {
           countsLock.readLock().lock();
           try {
@@ -348,6 +363,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param location the file location
       * @return the word count
       */
+     @Override
      public int getCountsInLocation(String location) {
           countsLock.readLock().lock();
           try {
@@ -365,6 +381,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @return whether or not there is a file in the counts map for the given file
       *         or not
       */
+     @Override
      public boolean hasCounts(String file) {
           countsLock.readLock().lock();
           try {
@@ -380,6 +397,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * 
       * @return the keys of the counts
       */
+     @Override
      public Set<String> getLocations() {
           countsLock.readLock().lock();
           try {
@@ -395,6 +413,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @param path the output path
       * @throws IOException io exception
       */
+     @Override
      public void writeCounts(Path path) throws IOException {
           countsLock.readLock().lock();
           try {

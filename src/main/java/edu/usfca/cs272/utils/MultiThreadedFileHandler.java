@@ -24,7 +24,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       * outputs it to a json
       *
       * @param invertedIndex the invertedIndex
-      * @param threads       the number of threads to use in the work queue
+      * @param workQueue     the work queue
       */
      public MultiThreadedFileHandler(InvertedIndex invertedIndex, WorkQueue workQueue) {
           super(invertedIndex);
@@ -37,6 +37,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       * @param textPath - Path to the text file to be hashed
       * @throws IOException the IO exception
       */
+     @Override
      public void fillInvertedIndex(Path textPath) throws IOException {
           fillHash(textPath, true);
           workQueue.finish();
@@ -89,9 +90,20 @@ public class MultiThreadedFileHandler extends FileHandler {
           invertedIndex.addIndex(local, file.toString());
      }
 
+     /**
+      * The task for parsing a file
+      */
      public class FileTask implements Runnable {
+          /**
+           * The path
+           */
           private Path input;
 
+          /**
+           * The constructor
+           * 
+           * @param input the input path
+           */
           public FileTask(Path input) {
                this.input = input;
           }
