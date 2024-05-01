@@ -15,6 +15,10 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
 
+/*
+ * TODO Go the interface route instead of the extends route
+ */
+
 /**
  * Class responsible for handling the Queries
  *
@@ -96,7 +100,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
      public void handleQueries(String line, SnowballStemmer stemmer) {
 
           final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
-          final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer));
+          final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer)); // TODO Don't stem twice
 
           if (key.length() > 0) {
                List<QueryEntry> queryResults = getQueryResults(val, key);
@@ -167,6 +171,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param key   the key
       * @return the list of query entry matches
       */
+     // TODO @Override
      public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
           if (stems.size() > 0) {
                List<QueryEntry> val;

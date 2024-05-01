@@ -28,12 +28,12 @@ public class InvertedIndex {
      /**
       * private final indexes
       */
-     protected final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
+     protected final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes; // TODO private
 
      /**
       * private final counts
       */
-     protected final TreeMap<String, Integer> counts;
+     protected final TreeMap<String, Integer> counts; // TODO private
 
      /**
       * Inverted Index Constructor
@@ -138,6 +138,15 @@ public class InvertedIndex {
       * @param index    - the index to add to the index map
       */
      public void addIndex(String word, String location, int index) {
+    	boolean result = indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
+                         .add(index);
+    	
+    	/* TODO 
+    	if (result) {
+    		counts.merge(location, 1, Integer::sum);
+    	}
+    	*/
+    	 
           if (!hasPosition(word, location, index)) {
                counts.compute(location, (key, val) -> {
                     return (counts.containsKey(key) ? val : 0) + 1;
@@ -164,6 +173,30 @@ public class InvertedIndex {
           counts.merge(location, newSize - originalSize, Integer::sum);
      }
 
+     /* TODO 
+     public void addIndex(InvertedIndex otherIndex) {
+    	 
+    	 	for (var otherEntry : otherIndex.indexes.entrySet()) {
+    	 		var word = otherEntry.getKey();
+    	 		var otherLocations = otherEntry.getValue();
+    	 		var thisLocations = this.indexes.get(word);
+    	 		
+    	 		if (thisLocations == null) {
+    	 			this.indexes.put(word, otherLocations);
+    	 		}
+    	 		else {
+    	 			for ...
+    	 		}
+    	 		
+    	 	}
+    	 	
+    	 	for (var otherEntry : otherIndex.counts.entrySet()) {
+    	 		
+    	 	}
+    	 
+     }
+     */
+     
      /**
       * Adds the indices of another InvertedIndex to this one
       * 

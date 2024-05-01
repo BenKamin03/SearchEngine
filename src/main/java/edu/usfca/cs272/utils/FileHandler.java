@@ -22,7 +22,7 @@ public class FileHandler {
      /**
       * private InvertedIndex
       */
-     protected final InvertedIndex invertedIndex;
+     protected final InvertedIndex invertedIndex; // TODO private
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
@@ -109,6 +109,7 @@ public class FileHandler {
       * @throws IOException an IO exception
       */
      public void handleFile(Path file) throws IOException {
+    	 // TODO handleFile(file, this.invertedIndex);
           try (BufferedReader reader = Files.newBufferedReader(file, UTF_8)) {
                String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);

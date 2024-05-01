@@ -29,7 +29,7 @@ public class QueryHandler {
      /**
       * The query
       */
-     protected final TreeMap<String, List<QueryEntry>> query;
+     protected final TreeMap<String, List<QueryEntry>> query; // TODO private
 
      /**
       * the search function
@@ -56,7 +56,7 @@ public class QueryHandler {
      public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                String line = null;
-               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
+               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH); // TODO Make a member
 
                while ((line = reader.readLine()) != null) {
                     handleQueries(line, stemmer);
