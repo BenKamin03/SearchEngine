@@ -24,12 +24,12 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2024
  */
-public class QueryHandler {
+public class QueryHandler implements QueryHandlerInterface {
 
      /**
       * The query
       */
-     protected final TreeMap<String, List<QueryEntry>> query; // TODO private
+     private final TreeMap<String, List<QueryEntry>> query;
 
      /**
       * the search function

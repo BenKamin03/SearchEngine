@@ -14,6 +14,7 @@ import edu.usfca.cs272.utils.MultiThreadedFileHandler;
 import edu.usfca.cs272.utils.MultiThreadedInvertedIndex;
 import edu.usfca.cs272.utils.MultiThreadedQueryHandler;
 import edu.usfca.cs272.utils.QueryHandler;
+import edu.usfca.cs272.utils.QueryHandlerInterface;
 import edu.usfca.cs272.utils.WorkQueue;
 
 /**
@@ -59,7 +60,7 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser(args);
 
 		InvertedIndex invertedIndex;
-		QueryHandler queryHandler;
+		QueryHandlerInterface queryHandler;
 		FileHandler fileHandler;
 		
 		int threads = getThreads(parser);

@@ -177,7 +177,6 @@ public class InvertedIndex {
                } else {
                     for (var otherLocationEntry : otherLocations.entrySet()) {
                          addIndex(word, otherLocationEntry.getKey(), otherLocationEntry.getValue());
-                         System.out.println(getInstancesOfWordInLocation(otherEntry.getKey(), otherLocationEntry.getKey()));
                     }
                }
           }

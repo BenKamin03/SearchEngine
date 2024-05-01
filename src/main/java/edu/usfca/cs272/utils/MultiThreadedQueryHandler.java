@@ -8,16 +8,15 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
-
-/*
- * TODO Go the interface route instead of the extends route
- */
 
 /**
  * Class responsible for handling the Queries
@@ -26,7 +25,11 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2024
  */
-public class MultiThreadedQueryHandler extends QueryHandler {
+public class MultiThreadedQueryHandler implements QueryHandlerInterface {
+
+     private final TreeMap<String, List<QueryEntry>> query;
+
+     private final Function<Set<String>, List<QueryEntry>> searchFunction;
 
      /**
       * the lock for the query
@@ -46,9 +49,10 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param workQueue     the work queue
       */
      public MultiThreadedQueryHandler(InvertedIndex invertedIndex, boolean partial, WorkQueue workQueue) {
-          super(invertedIndex, partial);
           this.workQueue = workQueue;
           queryLock = new MultiReaderLock();
+          query = new TreeMap<>();
+          searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
      }
 
      /**
@@ -100,7 +104,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
      public void handleQueries(String line, SnowballStemmer stemmer) {
 
           final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
-          final String key = getSearchFromWords(FileStemmer.uniqueStems(line, stemmer)); // TODO Don't stem twice
+          final String key = getSearchFromWords(val);
 
           if (key.length() > 0) {
                List<QueryEntry> queryResults = getQueryResults(val, key);
@@ -171,7 +175,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
       * @param key   the key
       * @return the list of query entry matches
       */
-     // TODO @Override
+     @Override
      public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
           if (stems.size() > 0) {
                List<QueryEntry> val;
@@ -184,7 +188,7 @@ public class MultiThreadedQueryHandler extends QueryHandler {
                }
 
                if (val == null) {
-                    val = super.getSearchFunction().apply(stems);
+                    val = searchFunction.apply(stems);
                }
 
                return val;
@@ -214,6 +218,22 @@ public class MultiThreadedQueryHandler extends QueryHandler {
      @Override
      public List<QueryEntry> getQueryResults(String line) {
           return getQueryResults(line, new SnowballStemmer(ENGLISH));
+     }
+
+     @Override
+     public Function<Set<String>, List<QueryEntry>> getSearchFunction() {
+          return searchFunction;
+     }
+
+     @Override
+     public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
+          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+
+          if (stems.size() > 0) {
+               return getQueryResults(stems, getSearchFromWords(stems));
+          }
+
+          return Collections.emptyList();
      }
 
      /**

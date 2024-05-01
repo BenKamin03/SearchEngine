@@ -71,7 +71,7 @@ public class FileHandler {
           } else {
                // Path is a File --> Base Case
                if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
-                    handleFile(input, invertedIndex);
+                    handleFile(input);
                }
           }
      }
