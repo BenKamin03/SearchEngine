@@ -50,6 +50,12 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       */
      @Override
      public List<QueryEntry> exactSearch(Set<String> queries) {
+    	 /* TODO 
+    	 lock counts
+    	 lock index
+    	 try super finally unlock
+    	 */
+    	 
           Iterator<String> searchIterator = queries.iterator();
 
           List<QueryEntry> entries = new ArrayList<>();

@@ -18,6 +18,8 @@ public class MultiThreadedFileHandler extends FileHandler {
       * the work queue
       */
      private final WorkQueue workQueue;
+     
+     // TODO private final MTII invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
@@ -26,6 +28,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       * @param invertedIndex the invertedIndex
       * @param workQueue     the work queue
       */
+     // TODO Change param to thread-safe veresion
      public MultiThreadedFileHandler(InvertedIndex invertedIndex, WorkQueue workQueue) {
           super(invertedIndex);
           this.workQueue = workQueue;
@@ -39,7 +42,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       */
      @Override
      public void fillInvertedIndex(Path textPath) throws IOException {
-          fillHash(textPath, true);
+          fillHash(textPath, true); // TODO super.fillInvertedIndex(textPath);
           workQueue.finish();
      }
 
@@ -52,7 +55,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       * @throws IOException an IO exception
       */
      @Override
-     public void fillHash(Path input, boolean requireText) throws IOException {
+     public void fillHash(Path input, boolean requireText) throws IOException { // TODO Remove
           /*
            * ---------------------------------------------
            *
@@ -85,6 +88,9 @@ public class MultiThreadedFileHandler extends FileHandler {
       */
      @Override
      public void handleFile(Path file) throws IOException {
+    	 // TODO workQueue.execute(new FileTask(file));
+    	 
+    	 // TODO Move this into run
           InvertedIndex local = new InvertedIndex();
           FileHandler.handleFile(file, local);
           invertedIndex.addIndex(local, file.toString());
