@@ -28,12 +28,12 @@ public class InvertedIndex {
      /**
       * private final indexes
       */
-     protected final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes; // TODO private
+     private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> indexes;
 
      /**
       * private final counts
       */
-     protected final TreeMap<String, Integer> counts; // TODO private
+     private final TreeMap<String, Integer> counts;
 
      /**
       * Inverted Index Constructor
@@ -138,22 +138,11 @@ public class InvertedIndex {
       * @param index    - the index to add to the index map
       */
      public void addIndex(String word, String location, int index) {
-    	boolean result = indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
-                         .add(index);
-    	
-    	/* TODO 
-    	if (result) {
-    		counts.merge(location, 1, Integer::sum);
-    	}
-    	*/
-    	 
-          if (!hasPosition(word, location, index)) {
-               counts.compute(location, (key, val) -> {
-                    return (counts.containsKey(key) ? val : 0) + 1;
-               });
-
-               indexes.computeIfAbsent(word, k -> new TreeMap<>()).computeIfAbsent(location, k -> new TreeSet<>())
-                         .add(index);
+          boolean result = indexes.computeIfAbsent(word, k -> new TreeMap<>())
+                    .computeIfAbsent(location, k -> new TreeSet<>())
+                    .add(index);
+          if (result) {
+               counts.merge(location, 1, Integer::sum);
           }
      }
 
@@ -169,45 +158,28 @@ public class InvertedIndex {
                     k -> new TreeSet<>());
           int originalSize = instances.size();
           instances.addAll(indices);
-          int newSize = instances.size();
-          counts.merge(location, newSize - originalSize, Integer::sum);
+          counts.merge(location, instances.size() - originalSize, Integer::sum);
      }
 
-     /* TODO 
      public void addIndex(InvertedIndex otherIndex) {
-    	 
-    	 	for (var otherEntry : otherIndex.indexes.entrySet()) {
-    	 		var word = otherEntry.getKey();
-    	 		var otherLocations = otherEntry.getValue();
-    	 		var thisLocations = this.indexes.get(word);
-    	 		
-    	 		if (thisLocations == null) {
-    	 			this.indexes.put(word, otherLocations);
-    	 		}
-    	 		else {
-    	 			for ...
-    	 		}
-    	 		
-    	 	}
-    	 	
-    	 	for (var otherEntry : otherIndex.counts.entrySet()) {
-    	 		
-    	 	}
-    	 
-     }
-     */
-     
-     /**
-      * Adds the indices of another InvertedIndex to this one
-      * 
-      * @param invertedIndex the invertedIndex
-      * @param location      the location
-      */
-     public void addIndex(InvertedIndex invertedIndex, String location) {
-          var words = invertedIndex.getWords().iterator();
-          while (words.hasNext()) {
-               String word = words.next();
-               addIndex(word, location, invertedIndex.getInstancesOfWordInLocation(word, location));
+          for (var otherEntry : otherIndex.indexes.entrySet()) {
+               var word = otherEntry.getKey();
+               var otherLocations = otherEntry.getValue();
+               var thisLocations = this.indexes.get(word);
+
+               if (thisLocations == null) {
+                    this.indexes.put(word, otherLocations);
+                    var locationsIterator = otherLocations.entrySet().iterator();
+                    while (locationsIterator.hasNext()) {
+                         var currLocation = locationsIterator.next();
+                         this.counts.merge(currLocation.getKey(), currLocation.getValue().size(), Integer::sum);
+                    }
+               } else {
+                    for (var otherLocationEntry : otherLocations.entrySet()) {
+                         addIndex(word, otherLocationEntry.getKey(), otherLocationEntry.getValue());
+                         System.out.println(getInstancesOfWordInLocation(otherEntry.getKey(), otherLocationEntry.getKey()));
+                    }
+               }
           }
      }
 
@@ -302,6 +274,10 @@ public class InvertedIndex {
           JsonWriter.writeObjectMap(indexes, path);
      }
 
+     public String writeIndex() {
+          return JsonWriter.writeObjectMap(indexes);
+     }
+
      /**
       * Returns a TreeMap of counts keyed by category.
       * 
@@ -359,6 +335,10 @@ public class InvertedIndex {
       */
      public void writeCounts(Path path) throws IOException {
           JsonWriter.writeObject(counts, path);
+     }
+
+     public String writeCounts() {
+          return JsonWriter.writeObject(counts);
      }
 
      @Override

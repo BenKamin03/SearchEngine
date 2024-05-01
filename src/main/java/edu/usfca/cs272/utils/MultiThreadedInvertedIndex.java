@@ -2,16 +2,9 @@ package edu.usfca.cs272.utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.TreeMap;
 
 /**
  * Class responsible for keeping the data structures for the indexes and counts
@@ -50,28 +43,14 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       */
      @Override
      public List<QueryEntry> exactSearch(Set<String> queries) {
-    	 /* TODO 
-    	 lock counts
-    	 lock index
-    	 try super finally unlock
-    	 */
-    	 
-          Iterator<String> searchIterator = queries.iterator();
-
-          List<QueryEntry> entries = new ArrayList<>();
-          Map<String, QueryEntry> lookup = new HashMap<>();
-
-          while (searchIterator.hasNext()) {
-               indexesLock.readLock().lock();
-               try {
-                    queryWord(indexes.get(searchIterator.next()), entries, lookup);
-               } finally {
-                    indexesLock.readLock().unlock();
-               }
+          indexesLock.readLock().lock();
+          countsLock.readLock().lock();
+          try {
+               return super.exactSearch(queries);
+          } finally {
+               indexesLock.readLock().unlock();
+               countsLock.readLock().unlock();
           }
-
-          Collections.sort(entries);
-          return entries;
      }
 
      /**
@@ -82,54 +61,13 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       */
      @Override
      public List<QueryEntry> partialSearch(Set<String> queries) {
-          List<QueryEntry> entries = new ArrayList<>();
-          Map<String, QueryEntry> lookup = new HashMap<>();
-
-          for (String stem : queries) {
-               Iterator<Entry<String, TreeMap<String, TreeSet<Integer>>>> entrySet;
-               Entry<String, TreeMap<String, TreeSet<Integer>>> curr = null;
-
-               indexesLock.readLock().lock();
-               try {
-                    entrySet = indexes.tailMap(stem)
-                              .entrySet()
-                              .iterator();
-               } finally {
-                    indexesLock.readLock().unlock();
-               }
-
-               while (entrySet.hasNext() && (curr = entrySet.next()).getKey().startsWith(stem)) {
-                    queryWord(indexes.get(curr.getKey()), entries, lookup);
-               }
-          }
-
-          Collections.sort(entries);
-          return entries;
-     }
-
-     /**
-      * queries the word in the locations
-      * 
-      * @param wordLocations the locations of the word
-      * @param entries       the entries of QueryEntries
-      * @param lookup        the lookup table
-      */
-     private void queryWord(TreeMap<String, TreeSet<Integer>> wordLocations, List<QueryEntry> entries,
-               Map<String, QueryEntry> lookup) {
-          if (wordLocations != null) {
-               var locationIterator = wordLocations.entrySet().iterator();
-               while (locationIterator.hasNext()) {
-                    Entry<String, TreeSet<Integer>> location = locationIterator.next();
-
-                    lookup.computeIfAbsent(location.getKey(), (String f) -> {
-                         QueryEntry newEntry = new QueryEntry(location.getKey());
-                         entries.add(newEntry);
-                         return newEntry;
-                    });
-
-                    int size = location.getValue().size();
-                    lookup.get(location.getKey()).addQuery(size);
-               }
+          indexesLock.readLock().lock();
+          countsLock.readLock().lock();
+          try {
+               return super.partialSearch(queries);
+          } finally {
+               indexesLock.readLock().unlock();
+               countsLock.readLock().unlock();
           }
      }
 
@@ -159,58 +97,37 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       */
      @Override
      public void addIndex(String word, String location, int index) {
-          if (!hasPosition(word, location, index)) {
-               countsLock.writeLock().lock();
-               try {
-                    counts.merge(location, 1, Integer::sum);
-               } finally {
-                    countsLock.writeLock().unlock();
-               }
-
-               indexesLock.writeLock().lock();
-               try {
-                    indexes.computeIfAbsent(word, k -> new TreeMap<>())
-                              .computeIfAbsent(location, k -> new TreeSet<>()).add(index);
-               } finally {
-                    indexesLock.writeLock().unlock();
-               }
+          indexesLock.writeLock().lock();
+          countsLock.writeLock().lock();
+          try {
+               super.addIndex(word, location, index);
+          } finally {
+               indexesLock.writeLock().unlock();
+               countsLock.writeLock().unlock();
           }
      }
 
      @Override
      public void addIndex(String word, String location, Set<Integer> indecies) {
           indexesLock.writeLock().lock();
-          int newSize, originalSize;
-          try {
-               TreeSet<Integer> instances = indexes.computeIfAbsent(word, k -> new TreeMap<>())
-                         .computeIfAbsent(location, k -> new TreeSet<>());
-               originalSize = instances.size();
-               instances.addAll(indecies);
-               newSize = instances.size();
-          } finally {
-               indexesLock.writeLock().unlock();
-          }
-
           countsLock.writeLock().lock();
           try {
-               counts.merge(location, newSize - originalSize, Integer::sum);
+               super.addIndex(word, location, indecies);
           } finally {
+               indexesLock.writeLock().unlock();
                countsLock.writeLock().unlock();
           }
      }
 
-     /**
-      * Adds the indices of another InvertedIndex to this one
-      * 
-      * @param invertedIndex the inverted index
-      * @param location      the location
-      */
      @Override
-     public void addIndex(InvertedIndex invertedIndex, String location) {
-          var words = invertedIndex.getWords().iterator();
-          while (words.hasNext()) {
-               String word = words.next();
-               addIndex(word, location, invertedIndex.getInstancesOfWordInLocation(word, location));
+     public void addIndex(InvertedIndex otherIndex) {
+          indexesLock.writeLock().lock();
+          countsLock.writeLock().lock();
+          try {
+               super.addIndex(otherIndex);
+          } finally {
+               indexesLock.writeLock().unlock();
+               countsLock.writeLock().unlock();
           }
      }
 
@@ -223,7 +140,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public Set<String> getWords() {
           indexesLock.readLock().lock();
           try {
-               return Collections.unmodifiableSet(indexes.keySet());
+               return super.getWords();
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -239,8 +156,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public Set<String> getLocationsOfWord(String word) {
           indexesLock.readLock().lock();
           try {
-               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-               return wordInIndex != null ? Collections.unmodifiableSet(wordInIndex.keySet()) : Collections.emptySet();
+               return super.getLocationsOfWord(word);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -257,14 +173,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public Set<Integer> getInstancesOfWordInLocation(String word, String location) {
           indexesLock.readLock().lock();
           try {
-               TreeMap<String, TreeSet<Integer>> wordMap = indexes.get(word);
-               if (wordMap != null) {
-                    TreeSet<Integer> instances = wordMap.get(location);
-                    if (instances != null) {
-                         return Collections.unmodifiableSet(instances);
-                    }
-               }
-               return Collections.emptySet();
+               return super.getInstancesOfWordInLocation(word, location);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -282,7 +191,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public boolean hasWord(String word) {
           indexesLock.readLock().lock();
           try {
-               return indexes.containsKey(word);
+               return super.hasWord(word);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -301,8 +210,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public boolean hasLocation(String word, String location) {
           indexesLock.readLock().lock();
           try {
-               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-               return wordInIndex != null && wordInIndex.containsKey(location);
+               return super.hasLocation(word, location);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -320,12 +228,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public boolean hasPosition(String word, String location, int position) {
           indexesLock.readLock().lock();
           try {
-               TreeMap<String, TreeSet<Integer>> wordInIndex = indexes.get(word);
-               if (wordInIndex != null) {
-                    TreeSet<Integer> locationInWord = wordInIndex.get(location);
-                    return locationInWord != null && locationInWord.contains(position);
-               }
-               return false;
+               return super.hasPosition(word, location, position);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -341,7 +244,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public void writeIndex(Path path) throws IOException {
           indexesLock.readLock().lock();
           try {
-               JsonWriter.writeObjectMap(indexes, path);
+               super.writeIndex(path);
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -357,7 +260,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public Map<String, Integer> getCounts() {
           countsLock.readLock().lock();
           try {
-               return Collections.unmodifiableMap(counts);
+               return super.getCounts();
           } finally {
                countsLock.readLock().unlock();
           }
@@ -373,7 +276,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public int getCountsInLocation(String location) {
           countsLock.readLock().lock();
           try {
-               return counts.getOrDefault(location, 0);
+               return getCountsInLocation(location);
           } finally {
                countsLock.readLock().unlock();
           }
@@ -391,7 +294,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public boolean hasCounts(String file) {
           countsLock.readLock().lock();
           try {
-               return counts.containsKey(file);
+               return super.hasCounts(file);
           } finally {
                countsLock.readLock().unlock();
           }
@@ -407,7 +310,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public Set<String> getLocations() {
           countsLock.readLock().lock();
           try {
-               return getCounts().keySet();
+               return super.getLocations();
           } finally {
                countsLock.readLock().unlock();
           }
@@ -423,7 +326,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      public void writeCounts(Path path) throws IOException {
           countsLock.readLock().lock();
           try {
-               JsonWriter.writeObject(counts, path);
+               super.writeCounts(path);
           } finally {
                countsLock.readLock().unlock();
           }
@@ -436,7 +339,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
 
           indexesLock.readLock().lock();
           try {
-               builder.append(JsonWriter.writeObjectMap(indexes));
+               builder.append(super.writeIndex());
           } finally {
                indexesLock.readLock().unlock();
           }
@@ -445,7 +348,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
 
           countsLock.readLock().lock();
           try {
-               builder.append(JsonWriter.writeObject(counts));
+               builder.append(super.writeCounts());
           } finally {
                countsLock.readLock().unlock();
           }

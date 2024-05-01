@@ -93,7 +93,7 @@ public class MultiThreadedFileHandler extends FileHandler {
     	 // TODO Move this into run
           InvertedIndex local = new InvertedIndex();
           FileHandler.handleFile(file, local);
-          invertedIndex.addIndex(local, file.toString());
+          invertedIndex.addIndex(local);
      }
 
      /**
