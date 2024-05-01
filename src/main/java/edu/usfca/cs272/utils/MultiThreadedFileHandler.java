@@ -2,7 +2,6 @@ package edu.usfca.cs272.utils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -18,8 +17,8 @@ public class MultiThreadedFileHandler extends FileHandler {
       * the work queue
       */
      private final WorkQueue workQueue;
-     
-     // TODO private final MTII invertedIndex;
+
+     private final MultiThreadedInvertedIndex invertedIndex;
 
      /**
       * Reads and creates an inversed lookup table of the contents of a file and
@@ -28,10 +27,10 @@ public class MultiThreadedFileHandler extends FileHandler {
       * @param invertedIndex the invertedIndex
       * @param workQueue     the work queue
       */
-     // TODO Change param to thread-safe veresion
-     public MultiThreadedFileHandler(InvertedIndex invertedIndex, WorkQueue workQueue) {
+     public MultiThreadedFileHandler(MultiThreadedInvertedIndex invertedIndex, WorkQueue workQueue) {
           super(invertedIndex);
           this.workQueue = workQueue;
+          this.invertedIndex = invertedIndex;
      }
 
      /**
@@ -42,41 +41,8 @@ public class MultiThreadedFileHandler extends FileHandler {
       */
      @Override
      public void fillInvertedIndex(Path textPath) throws IOException {
-          fillHash(textPath, true); // TODO super.fillInvertedIndex(textPath);
+          super.fillInvertedIndex(textPath);
           workQueue.finish();
-     }
-
-     /**
-      * Fills Hash with stem info for Path p. This is used to generate the Hash from
-      * files and directories
-      *
-      * @param input       the input path
-      * @param requireText whether the hash should include text files
-      * @throws IOException an IO exception
-      */
-     @Override
-     public void fillHash(Path input, boolean requireText) throws IOException { // TODO Remove
-          /*
-           * ---------------------------------------------
-           *
-           * Credit: Sophie Engle
-           * https://github.com/usf-cs272-spring2024/cs272-lectures/blob/main/src/main/
-           * java/edu/usfca/cs272/lectures/basics/io/DirectoryStreamDemo.java
-           *
-           * ---------------------------------------------
-           */
-          // Recursively fill hash of files and files.
-          if (Files.isDirectory(input)) {
-               // Path is a Directory --> Recurse Through Each Sub Path
-               for (Path path : Files.newDirectoryStream(input)) {
-                    fillHash(path, false);
-               }
-          } else {
-               // Path is a File --> Base Case
-               if (fileExtensionFilter(input, new String[] { ".txt", ".text" }) || requireText) {
-                    workQueue.execute(new FileTask(input));
-               }
-          }
      }
 
      /**
@@ -88,12 +54,7 @@ public class MultiThreadedFileHandler extends FileHandler {
       */
      @Override
      public void handleFile(Path file) throws IOException {
-    	 // TODO workQueue.execute(new FileTask(file));
-    	 
-    	 // TODO Move this into run
-          InvertedIndex local = new InvertedIndex();
-          FileHandler.handleFile(file, local);
-          invertedIndex.addIndex(local);
+          workQueue.execute(new FileTask(file));
      }
 
      /**
@@ -117,7 +78,9 @@ public class MultiThreadedFileHandler extends FileHandler {
           @Override
           public void run() {
                try {
-                    handleFile(input);
+                    InvertedIndex local = new InvertedIndex();
+                    FileHandler.handleFile(input, local);
+                    invertedIndex.addIndex(local);
                } catch (IOException e) {
                     throw new UncheckedIOException(e);
                }

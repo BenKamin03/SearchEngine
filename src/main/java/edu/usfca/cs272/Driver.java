@@ -69,7 +69,7 @@ public class Driver {
 
 			invertedIndex = new MultiThreadedInvertedIndex();
 			queryHandler = new MultiThreadedQueryHandler(invertedIndex, parser.hasFlag("-partial"), workQueue);
-			fileHandler = new MultiThreadedFileHandler(invertedIndex, workQueue);
+			fileHandler = new MultiThreadedFileHandler((MultiThreadedInvertedIndex) invertedIndex, workQueue);
 		} else {
 			invertedIndex = new InvertedIndex();
 			queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
