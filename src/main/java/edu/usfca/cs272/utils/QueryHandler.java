@@ -26,6 +26,8 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  */
 public class QueryHandler implements QueryHandlerInterface {
 
+     private final SnowballStemmer stemmer;
+
      /**
       * The query
       */
@@ -45,6 +47,7 @@ public class QueryHandler implements QueryHandlerInterface {
      public QueryHandler(InvertedIndex invertedIndex, boolean partial) {
           query = new TreeMap<>();
           searchFunction = partial ? invertedIndex::partialSearch : invertedIndex::exactSearch;
+          stemmer = new SnowballStemmer(ENGLISH);
      }
 
      /**
@@ -57,7 +60,6 @@ public class QueryHandler implements QueryHandlerInterface {
 	public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                String line = null;
-               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH); // TODO Make a member
 
                while ((line = reader.readLine()) != null) {
                     handleQueries(line, stemmer);
