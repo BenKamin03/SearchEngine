@@ -160,7 +160,12 @@ public class InvertedIndex {
           instances.addAll(indices);
           counts.merge(location, instances.size() - originalSize, Integer::sum);
      }
-
+     
+     /**
+      * The way to combine inverted indexes
+      * 
+      * @param otherIndex the other inverted index
+      */
      public void addIndex(InvertedIndex otherIndex) {
           for (var otherEntry : otherIndex.indexes.entrySet()) {
                var word = otherEntry.getKey();
@@ -272,7 +277,12 @@ public class InvertedIndex {
      public void writeIndex(Path path) throws IOException {
           JsonWriter.writeObjectMap(indexes, path);
      }
-
+     
+     /**
+      * Writes the index to a String
+      * 
+      * @return the string
+      */
      public String writeIndex() {
           return JsonWriter.writeObjectMap(indexes);
      }
@@ -335,7 +345,12 @@ public class InvertedIndex {
      public void writeCounts(Path path) throws IOException {
           JsonWriter.writeObject(counts, path);
      }
-
+     
+     /**
+      * writes the counts to a String
+      * 
+      * @return the string
+      */
      public String writeCounts() {
           return JsonWriter.writeObject(counts);
      }

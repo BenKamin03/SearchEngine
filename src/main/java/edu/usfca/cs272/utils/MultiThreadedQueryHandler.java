@@ -26,9 +26,15 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @version Spring 2024
  */
 public class MultiThreadedQueryHandler implements QueryHandlerInterface {
-
+	
+	/**
+	 * the query
+	 */
      private final TreeMap<String, List<QueryEntry>> query;
-
+     
+     /**
+      * The search function
+      */
      private final Function<Set<String>, List<QueryEntry>> searchFunction;
 
      /**

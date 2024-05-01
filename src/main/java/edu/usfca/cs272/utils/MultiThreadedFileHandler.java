@@ -17,7 +17,10 @@ public class MultiThreadedFileHandler extends FileHandler {
       * the work queue
       */
      private final WorkQueue workQueue;
-
+     
+     /**
+      * The inverted index
+      */
      private final MultiThreadedInvertedIndex invertedIndex;
 
      /**

@@ -53,7 +53,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param path the input path
       * @throws IOException an IO exception
       */
-     public void handleQueries(Path path) throws IOException {
+     @Override
+	public void handleQueries(Path path) throws IOException {
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                String line = null;
                SnowballStemmer stemmer = new SnowballStemmer(ENGLISH); // TODO Make a member
@@ -70,7 +71,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * 
       * @param line the line
       */
-     public void handleQueries(String line) {
+     @Override
+	public void handleQueries(String line) {
           handleQueries(line, new SnowballStemmer(ENGLISH));
      }
 
@@ -80,6 +82,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param line    the line
       * @param stemmer the stemmer
       */
+     @Override
      public void handleQueries(String line, SnowballStemmer stemmer) {
           Set<String> queries = FileStemmer.uniqueStems(line, stemmer);
           if (queries.size() > 0) {
@@ -104,7 +107,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param path the output file
       * @throws IOException an IO Exception
       */
-     public void writeQuery(Path path) throws IOException {
+     @Override
+	public void writeQuery(Path path) throws IOException {
           JsonWriter.writeQuery(query, path);
      }
 
@@ -118,7 +122,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * 
       * @return the search function
       */
-     public Function<Set<String>, List<QueryEntry>> getSearchFunction() {
+     @Override
+	public Function<Set<String>, List<QueryEntry>> getSearchFunction() {
           return searchFunction;
      }
 
@@ -127,7 +132,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * 
       * @return the query's keyset
       */
-     public Set<String> getQueryLines() {
+     @Override
+	public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
 
@@ -138,7 +144,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param stemmer the stemmer
       * @return the list of queries
       */
-     public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
+     @Override
+	public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
           if (stems.size() > 0) {
@@ -155,7 +162,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param key   the key
       * @return the list of query results
       */
-     public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
+     @Override
+	public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
           List<QueryEntry> val;
 
           val = query.get(key);
@@ -173,7 +181,8 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param line the line
       * @return the list of queries
       */
-     public List<QueryEntry> getQueryResults(String line) {
+     @Override
+	public List<QueryEntry> getQueryResults(String line) {
           return getQueryResults(line, new SnowballStemmer(ENGLISH));
      }
 }
