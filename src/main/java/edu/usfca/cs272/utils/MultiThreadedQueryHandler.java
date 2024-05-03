@@ -73,6 +73,11 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
                handleQueries(path, reader);
                workQueue.finish();
           }
+          
+          /* TODO 
+          QueryHandlerInterface.super.handleQueries(path);
+          workQueue.finish();
+          */
      }
 
      /**
@@ -96,6 +101,7 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(String line) {
+    	 // TODO Create a task here instead
           handleQueries(line, new SnowballStemmer(ENGLISH));
 
      }
@@ -108,7 +114,7 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(String line, SnowballStemmer stemmer) {
-
+    	 			// TODO Move this into the run() and create a task here instead
           final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
           final String key = getSearchFromWords(val);
 
@@ -214,6 +220,10 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
           Set<String> queries = FileStemmer.uniqueStems(line, stemmer);
           return getQueryResults(queries, getSearchFromWords(queries));
      }
+     
+     /*
+      * TODO Reuse default implementations where possible
+      */
 
      /**
       * gets the query results for a line

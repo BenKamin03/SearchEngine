@@ -79,7 +79,7 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       * @return the list of query entries
       */
      @Override
-     public List<QueryEntry> search(Set<String> queries, boolean partial) {
+     public List<QueryEntry> search(Set<String> queries, boolean partial) { // TODO Remove
           if (partial) {
                return partialSearch(queries);
           } else {

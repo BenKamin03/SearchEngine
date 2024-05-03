@@ -31,7 +31,7 @@ public class WorkQueue {
 	/**
 	 * the key for pending
 	 */
-	private final Object pendingKey = new Object();
+	private final Object pendingKey = new Object(); // TODO Init in the constructor
 
 	/** Pending work */
 	private int pending;
@@ -95,7 +95,7 @@ public class WorkQueue {
 	 * 
 	 * @return the list of tasks
 	 */
-	public List<Runnable> getTasksRemaining() {
+	public List<Runnable> getTasksRemaining() { // TODO Remove or return # of tasks instead
 		synchronized (tasks) {
 			return Collections.unmodifiableList(tasks);
 		}
@@ -135,10 +135,10 @@ public class WorkQueue {
 	 */
 	public void finish() {
 		log.debug(System.currentTimeMillis() + " finishing");
-		synchronized (tasks) {
+		synchronized (tasks) { // TODO pendingKey
 			while (pending != 0) {
 				try {
-					tasks.wait();
+					tasks.wait(); // TODO pendingKey
 				} catch (InterruptedException e) {
 					// Handle interruption if necessary
 					log.error("Work queue interrupted while waiting for tasks to finish.");
@@ -222,10 +222,10 @@ public class WorkQueue {
 						while (tasks.isEmpty() && !shutdown) {
 							tasks.wait();
 						}
-						if (tasks.size() > 0) {
+						if (tasks.size() > 0) { // TODO Remove if
 							task = tasks.removeFirst();
 							log.debug("Running Task {}", tasks.size());
-						} else {
+						} else { // TODO Remove
 							continue;
 						}
 					}
@@ -237,8 +237,8 @@ public class WorkQueue {
 					} finally {
 						synchronized (pendingKey) {
 							if (--pending == 0) {
-								synchronized (tasks) {
-									tasks.notifyAll();
+								synchronized (tasks) { // TODO Remove
+									tasks.notifyAll(); // TODO pendingKey.notifyAll()
 								}
 							}
 						}

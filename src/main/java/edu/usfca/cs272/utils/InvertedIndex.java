@@ -167,6 +167,12 @@ public class InvertedIndex {
       * @param otherIndex the other inverted index
       */
      public void addIndex(InvertedIndex otherIndex) {
+    	 /* TODO 
+          for (var otherEntry : otherIndex.counts.entrySet()) {
+          	this.counts.merge(...);
+          }
+          */
+    	
           for (var otherEntry : otherIndex.indexes.entrySet()) {
                var word = otherEntry.getKey();
                var otherLocations = otherEntry.getValue();
@@ -174,6 +180,8 @@ public class InvertedIndex {
 
                if (thisLocations == null) {
                     this.indexes.put(word, otherLocations);
+                    
+                    // TODO Remove below, no overlap in this case
                     var locationsIterator = otherLocations.entrySet().iterator();
                     while (locationsIterator.hasNext()) {
                          var currLocation = locationsIterator.next();
@@ -181,6 +189,20 @@ public class InvertedIndex {
                     }
                } else {
                     for (var otherLocationEntry : otherLocations.entrySet()) {
+                    	/* TODO 
+                    		var location = otherLocationEntry.getKey();
+                    		var positions = otherLocationEntry.getValue();
+                    		var thisPositions = thisLocations.get(location);
+                    		
+                    		if (thisPositions == null) {
+                    			just put
+                    		}
+                    		else {
+                    			addAll
+                    			track overlap
+                    			and remove it from the counts
+                    		}
+                    	*/
                          addIndex(word, otherLocationEntry.getKey(), otherLocationEntry.getValue());
                     }
                }
@@ -322,7 +344,7 @@ public class InvertedIndex {
      /**
       * Clears the counts.
       */
-     public void clearCounts() {
+     public void clearCounts() { //TODO Remove
           counts.clear();
      }
 
@@ -417,7 +439,7 @@ public class InvertedIndex {
            * 
            * @param addAppliedWords the amount of applied words in the file
            */
-          public void addQuery(int addAppliedWords) {
+          public void addQuery(int addAppliedWords) { // TODO private
                appliedWords += addAppliedWords;
                score = ((double) appliedWords / totalWords);
           }

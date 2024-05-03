@@ -25,7 +25,7 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @version Spring 2024
  */
 public class QueryHandler implements QueryHandlerInterface {
-
+	// TODO Javadoc
      private final SnowballStemmer stemmer;
 
      /**
@@ -57,7 +57,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @throws IOException an IO exception
       */
      @Override
-	public void handleQueries(Path path) throws IOException {
+	public void handleQueries(Path path) throws IOException { // TODO default in the interface
           try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
                String line = null;
 
@@ -74,7 +74,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param line the line
       */
      @Override
-	public void handleQueries(String line) {
+	public void handleQueries(String line) { // TODO Move this as default int hte interface, but still override here to reuse the stemmer
           handleQueries(line, new SnowballStemmer(ENGLISH));
      }
 
@@ -99,7 +99,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @param words the list of strings
       * @return the string containing the list
       */
-     public static String getSearchFromWords(Set<String> words) {
+     public static String getSearchFromWords(Set<String> words) { // TODO Remove
           return String.join(" ", words);
      }
 
@@ -147,7 +147,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @return the list of queries
       */
      @Override
-	public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
+	public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) { // TODO Make this default too
           TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
 
           if (stems.size() > 0) {
@@ -165,7 +165,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @return the list of query results
       */
      @Override
-	public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
+	public List<QueryEntry> getQueryResults(Set<String> stems, String key) { // TODO Better names
           List<QueryEntry> val;
 
           val = query.get(key);
@@ -184,7 +184,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @return the list of queries
       */
      @Override
-	public List<QueryEntry> getQueryResults(String line) {
+	public List<QueryEntry> getQueryResults(String line) { // TODO Make this default in the interface, but override here to reuse the stemmer member
           return getQueryResults(line, new SnowballStemmer(ENGLISH));
      }
 }
