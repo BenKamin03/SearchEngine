@@ -108,6 +108,14 @@ public class Driver {
 				System.out.println("IO Error with -query flag");
 			}
 		}
+
+		if (parser.hasFlag("-html")) {
+			if (workQueue == null) {
+				workQueue = new WorkQueue();
+			}
+
+			//Do Crawl
+		}
 		
 		if (workQueue != null) {
 			workQueue.shutdown();
