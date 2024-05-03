@@ -62,6 +62,7 @@ public class Driver {
 		InvertedIndex invertedIndex;
 		QueryHandlerInterface queryHandler;
 		FileHandler fileHandler;
+		// TODO WorkQueue workQueue;
 		
 		int threads = getThreads(parser);
 
@@ -75,6 +76,7 @@ public class Driver {
 			invertedIndex = new InvertedIndex();
 			queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
 			fileHandler = new FileHandler(invertedIndex);
+			// TODO workQueue == null;
 		}
 
 		if (parser.hasFlag("-text")) {
@@ -106,6 +108,12 @@ public class Driver {
 				System.out.println("IO Error with -query flag");
 			}
 		}
+		
+		/* TODO 
+		if (workQueue != null) {
+			workQueue.shutdown();
+		}
+		*/
 
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
