@@ -167,11 +167,9 @@ public class InvertedIndex {
       * @param otherIndex the other inverted index
       */
      public void addIndex(InvertedIndex otherIndex) {
-    	 /* TODO 
           for (var otherEntry : otherIndex.counts.entrySet()) {
-          	this.counts.merge(...);
+               this.counts.merge(otherEntry.getKey(), otherEntry.getValue(), Integer::sum);
           }
-          */
     	
           for (var otherEntry : otherIndex.indexes.entrySet()) {
                var word = otherEntry.getKey();
@@ -181,29 +179,19 @@ public class InvertedIndex {
                if (thisLocations == null) {
                     this.indexes.put(word, otherLocations);
                     
-                    // TODO Remove below, no overlap in this case
-                    var locationsIterator = otherLocations.entrySet().iterator();
-                    while (locationsIterator.hasNext()) {
-                         var currLocation = locationsIterator.next();
-                         this.counts.merge(currLocation.getKey(), currLocation.getValue().size(), Integer::sum);
-                    }
                } else {
                     for (var otherLocationEntry : otherLocations.entrySet()) {
-                    	/* TODO 
-                    		var location = otherLocationEntry.getKey();
-                    		var positions = otherLocationEntry.getValue();
-                    		var thisPositions = thisLocations.get(location);
-                    		
-                    		if (thisPositions == null) {
-                    			just put
-                    		}
-                    		else {
-                    			addAll
-                    			track overlap
-                    			and remove it from the counts
-                    		}
-                    	*/
-                         addIndex(word, otherLocationEntry.getKey(), otherLocationEntry.getValue());
+                         var location = otherLocationEntry.getKey();
+                         var positions = otherLocationEntry.getValue();
+                         var thisPositions = thisLocations.get(location);
+
+                         if (thisPositions == null) {
+                              thisLocations.put(location, positions);
+                         } else {
+                              int originalSize = thisPositions.size();
+                              thisPositions.addAll(positions);
+                              this.counts.merge(location, thisPositions.size() - originalSize, Integer::sum);
+                         }
                     }
                }
           }
@@ -342,13 +330,6 @@ public class InvertedIndex {
      }
 
      /**
-      * Clears the counts.
-      */
-     public void clearCounts() { //TODO Remove
-          counts.clear();
-     }
-
-     /**
       * Returns the keys of the counts.
       * 
       * 
@@ -439,7 +420,7 @@ public class InvertedIndex {
            * 
            * @param addAppliedWords the amount of applied words in the file
            */
-          public void addQuery(int addAppliedWords) { // TODO private
+          private void addQuery(int addAppliedWords) {
                appliedWords += addAppliedWords;
                score = ((double) appliedWords / totalWords);
           }

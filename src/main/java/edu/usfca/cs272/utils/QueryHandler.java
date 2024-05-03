@@ -1,15 +1,11 @@
 package edu.usfca.cs272.utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Function;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
@@ -25,7 +21,9 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @version Spring 2024
  */
 public class QueryHandler implements QueryHandlerInterface {
-	// TODO Javadoc
+     /**
+      * the stemmer
+      */
      private final SnowballStemmer stemmer;
 
      /**
@@ -51,31 +49,13 @@ public class QueryHandler implements QueryHandlerInterface {
      }
 
      /**
-      * Handles the queries given a path and whether it's partial search
-      * 
-      * @param path the input path
-      * @throws IOException an IO exception
-      */
-     @Override
-	public void handleQueries(Path path) throws IOException { // TODO default in the interface
-          try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
-               String line = null;
-
-               while ((line = reader.readLine()) != null) {
-                    handleQueries(line, stemmer);
-               }
-
-          }
-     }
-
-     /**
       * handles the queries given a line of search
       * 
       * @param line the line
       */
      @Override
-	public void handleQueries(String line) { // TODO Move this as default int hte interface, but still override here to reuse the stemmer
-          handleQueries(line, new SnowballStemmer(ENGLISH));
+	public void handleQueries(String line) {
+          handleQueries(line, stemmer);
      }
 
      /**
@@ -88,19 +68,9 @@ public class QueryHandler implements QueryHandlerInterface {
      public void handleQueries(String line, SnowballStemmer stemmer) {
           Set<String> queries = FileStemmer.uniqueStems(line, stemmer);
           if (queries.size() > 0) {
-               String key = getSearchFromWords(queries);
+               String key = QueryHandlerInterface.getSearchFromWords(queries);
                query.put(key, getQueryResults(queries, key));
           }
-     }
-
-     /**
-      * Combines the List into a String
-      * 
-      * @param words the list of strings
-      * @return the string containing the list
-      */
-     public static String getSearchFromWords(Set<String> words) { // TODO Remove
-          return String.join(" ", words);
      }
 
      /**
@@ -138,24 +108,7 @@ public class QueryHandler implements QueryHandlerInterface {
 	public Set<String> getQueryLines() {
           return Collections.unmodifiableSet(query.keySet());
      }
-
-     /**
-      * gets the query results for a line of search and a stemmer
-      * 
-      * @param line    the line of search
-      * @param stemmer the stemmer
-      * @return the list of queries
-      */
-     @Override
-	public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) { // TODO Make this default too
-          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-
-          if (stems.size() > 0) {
-               return getQueryResults(stems, getSearchFromWords(stems));
-          }
-
-          return Collections.emptyList();
-     }
+     
 
      /**
       * gets the query results from a list of stems and a key
@@ -165,16 +118,16 @@ public class QueryHandler implements QueryHandlerInterface {
       * @return the list of query results
       */
      @Override
-	public List<QueryEntry> getQueryResults(Set<String> stems, String key) { // TODO Better names
-          List<QueryEntry> val;
+	public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
+          List<QueryEntry> queries;
 
-          val = query.get(key);
+          queries = query.get(key);
 
-          if (val == null) {
-               val = searchFunction.apply(stems);
+          if (queries == null) {
+               queries = searchFunction.apply(stems);
           }
 
-          return val;
+          return queries;
      }
 
      /**
@@ -184,7 +137,7 @@ public class QueryHandler implements QueryHandlerInterface {
       * @return the list of queries
       */
      @Override
-	public List<QueryEntry> getQueryResults(String line) { // TODO Make this default in the interface, but override here to reuse the stemmer member
-          return getQueryResults(line, new SnowballStemmer(ENGLISH));
+	public List<QueryEntry> getQueryResults(String line) {
+          return getQueryResults(line, stemmer);
      }
 }

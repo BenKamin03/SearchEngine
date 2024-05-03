@@ -1,9 +1,6 @@
 package edu.usfca.cs272.utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -26,12 +23,12 @@ import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
  * @version Spring 2024
  */
 public class MultiThreadedQueryHandler implements QueryHandlerInterface {
-	
-	/**
-	 * the query
-	 */
+
+     /**
+      * the query
+      */
      private final TreeMap<String, List<QueryEntry>> query;
-     
+
      /**
       * The search function
       */
@@ -69,29 +66,8 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(Path path) throws IOException {
-          try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
-               handleQueries(path, reader);
-               workQueue.finish();
-          }
-          
-          /* TODO 
           QueryHandlerInterface.super.handleQueries(path);
           workQueue.finish();
-          */
-     }
-
-     /**
-      * Handles the queries given a path and a reader
-      * 
-      * @param path   the path
-      * @param reader the reader
-      * @throws IOException an IO exception
-      */
-     public void handleQueries(Path path, BufferedReader reader) throws IOException {
-          String line = null;
-          while ((line = reader.readLine()) != null) {
-               workQueue.execute(new QueryTask(line));
-          }
      }
 
      /**
@@ -101,9 +77,7 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(String line) {
-    	 // TODO Create a task here instead
-          handleQueries(line, new SnowballStemmer(ENGLISH));
-
+          workQueue.execute(new QueryTask(line));
      }
 
      /**
@@ -114,29 +88,7 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(String line, SnowballStemmer stemmer) {
-    	 			// TODO Move this into the run() and create a task here instead
-          final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
-          final String key = getSearchFromWords(val);
-
-          if (key.length() > 0) {
-               List<QueryEntry> queryResults = getQueryResults(val, key);
-               queryLock.writeLock().lock();
-               try {
-                    query.put(key, queryResults);
-               } finally {
-                    queryLock.writeLock().unlock();
-               }
-          }
-     }
-
-     /**
-      * Combines the List into a String
-      * 
-      * @param words the list of strings
-      * @return the string containing the list
-      */
-     public static String getSearchFromWords(Set<String> words) {
-          return String.join(" ", words);
+          workQueue.execute(new QueryTask(line, stemmer));
      }
 
      /**
@@ -190,20 +142,20 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
      @Override
      public List<QueryEntry> getQueryResults(Set<String> stems, String key) {
           if (stems.size() > 0) {
-               List<QueryEntry> val;
+               List<QueryEntry> queries;
 
                queryLock.readLock().lock();
                try {
-                    val = query.get(key);
+                    queries = query.get(key);
                } finally {
                     queryLock.readLock().unlock();
                }
 
-               if (val == null) {
-                    val = searchFunction.apply(stems);
+               if (queries == null) {
+                    queries = searchFunction.apply(stems);
                }
 
-               return val;
+               return queries;
           }
 
           return Collections.emptyList();
@@ -218,38 +170,12 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      public List<QueryEntry> getQueryResults(String line, Stemmer stemmer) {
           Set<String> queries = FileStemmer.uniqueStems(line, stemmer);
-          return getQueryResults(queries, getSearchFromWords(queries));
-     }
-     
-     /*
-      * TODO Reuse default implementations where possible
-      */
-
-     /**
-      * gets the query results for a line
-      * 
-      * @param line the line
-      * @return the list of queries
-      */
-     @Override
-     public List<QueryEntry> getQueryResults(String line) {
-          return getQueryResults(line, new SnowballStemmer(ENGLISH));
+          return getQueryResults(queries, QueryHandlerInterface.getSearchFromWords(queries));
      }
 
      @Override
      public Function<Set<String>, List<QueryEntry>> getSearchFunction() {
           return searchFunction;
-     }
-
-     @Override
-     public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
-          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
-
-          if (stems.size() > 0) {
-               return getQueryResults(stems, getSearchFromWords(stems));
-          }
-
-          return Collections.emptyList();
      }
 
      /**
@@ -261,6 +187,8 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
            */
           private String line;
 
+          private Stemmer stemmer;
+
           /**
            * The constructor
            * 
@@ -268,12 +196,28 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
            */
           public QueryTask(String line) {
                this.line = line;
+               stemmer = new SnowballStemmer(ENGLISH);
+          }
+
+          public QueryTask(String line, Stemmer stemmer) {
+               this.line = line;
+               this.stemmer = stemmer;
           }
 
           @Override
           public void run() {
-               SnowballStemmer stemmer = new SnowballStemmer(ENGLISH);
-               handleQueries(line, stemmer);
+               final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
+               final String key = QueryHandlerInterface.getSearchFromWords(val);
+
+               if (key.length() > 0) {
+                    List<QueryEntry> queryResults = getQueryResults(val, key);
+                    queryLock.writeLock().lock();
+                    try {
+                         query.put(key, queryResults);
+                    } finally {
+                         queryLock.writeLock().unlock();
+                    }
+               }
           }
 
      }

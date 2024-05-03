@@ -62,12 +62,12 @@ public class Driver {
 		InvertedIndex invertedIndex;
 		QueryHandlerInterface queryHandler;
 		FileHandler fileHandler;
-		// TODO WorkQueue workQueue;
+		WorkQueue workQueue;
 		
 		int threads = getThreads(parser);
 
 		if (threads > 1) {
-			WorkQueue workQueue = new WorkQueue(threads);
+			workQueue = new WorkQueue(threads);
 
 			invertedIndex = new MultiThreadedInvertedIndex();
 			queryHandler = new MultiThreadedQueryHandler(invertedIndex, parser.hasFlag("-partial"), workQueue);
@@ -76,7 +76,7 @@ public class Driver {
 			invertedIndex = new InvertedIndex();
 			queryHandler = new QueryHandler(invertedIndex, parser.hasFlag("-partial"));
 			fileHandler = new FileHandler(invertedIndex);
-			// TODO workQueue == null;
+			workQueue = null;
 		}
 
 		if (parser.hasFlag("-text")) {
@@ -109,11 +109,9 @@ public class Driver {
 			}
 		}
 		
-		/* TODO 
 		if (workQueue != null) {
 			workQueue.shutdown();
 		}
-		*/
 
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));

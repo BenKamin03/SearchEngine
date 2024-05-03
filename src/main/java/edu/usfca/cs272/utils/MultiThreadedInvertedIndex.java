@@ -72,22 +72,6 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
      }
 
      /**
-      * searches from the queries and whether it's partial
-      * 
-      * @param queries the queries
-      * @param partial search type
-      * @return the list of query entries
-      */
-     @Override
-     public List<QueryEntry> search(Set<String> queries, boolean partial) { // TODO Remove
-          if (partial) {
-               return partialSearch(queries);
-          } else {
-               return exactSearch(queries);
-          }
-     }
-
-     /**
       * Adds an index to the index map. This is used to determine which words are in
       * the index map when looking for a word that has already been added
       * 

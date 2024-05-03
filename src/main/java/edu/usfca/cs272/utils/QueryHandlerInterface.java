@@ -1,13 +1,20 @@
 package edu.usfca.cs272.utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
+
+import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
 
 /**
  * QueryHandlerInterface
@@ -20,7 +27,14 @@ public interface QueryHandlerInterface {
 	 * @param path the path
 	 * @throws IOException an IO exception
 	 */
-     public void handleQueries(Path path) throws IOException;
+     public default void handleQueries(Path path) throws IOException {
+          try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);) {
+               String line = null;
+               while ((line = reader.readLine()) != null) {
+                    handleQueries(line);
+               }
+          }
+     }
      
      /**
       * hands the queries given a line of query
@@ -28,6 +42,7 @@ public interface QueryHandlerInterface {
       * @param line the line
       */
      public void handleQueries(String line);
+     
 
      /**
       * handles the queries given a line and a stemmer
@@ -76,7 +91,15 @@ public interface QueryHandlerInterface {
       * @param stemmer the stemmer
       * @return the query results
       */
-     public List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer);
+      public default List<QueryEntry> getQueryResults(String line, SnowballStemmer stemmer) {
+          TreeSet<String> stems = FileStemmer.uniqueStems(line, stemmer);
+
+          if (stems.size() > 0) {
+               return getQueryResults(stems, QueryHandlerInterface.getSearchFromWords(stems));
+          }
+
+          return Collections.emptyList();
+     }
      
      /**
       * gets the query result given a set of stems and the key
@@ -93,5 +116,7 @@ public interface QueryHandlerInterface {
       * @param line the line
       * @return the query results
       */
-     public List<QueryEntry> getQueryResults(String line);
+      public default List<QueryEntry> getQueryResults(String line) {
+          return getQueryResults(line, new SnowballStemmer(ENGLISH));
+     }
 }

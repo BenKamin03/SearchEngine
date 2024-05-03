@@ -1,8 +1,6 @@
 package edu.usfca.cs272.utils;
 
-import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.logging.log4j.Level;
@@ -31,7 +29,7 @@ public class WorkQueue {
 	/**
 	 * the key for pending
 	 */
-	private final Object pendingKey = new Object(); // TODO Init in the constructor
+	private final Object pendingKey;
 
 	/** Pending work */
 	private int pending;
@@ -65,6 +63,7 @@ public class WorkQueue {
 		this.pending = 0;
 		this.workers = new Worker[threads];
 		this.shutdown = false;
+		pendingKey = new Object();
 
 		// start the threads so they are waiting in the background
 		for (int i = 0; i < threads; i++) {
@@ -88,17 +87,6 @@ public class WorkQueue {
 			}
 		}
 		return count;
-	}
-
-	/**
-	 * Gets a list of remaining tasks
-	 * 
-	 * @return the list of tasks
-	 */
-	public List<Runnable> getTasksRemaining() { // TODO Remove or return # of tasks instead
-		synchronized (tasks) {
-			return Collections.unmodifiableList(tasks);
-		}
 	}
 
 	/**
@@ -135,10 +123,10 @@ public class WorkQueue {
 	 */
 	public void finish() {
 		log.debug(System.currentTimeMillis() + " finishing");
-		synchronized (tasks) { // TODO pendingKey
+		synchronized (pendingKey) {
 			while (pending != 0) {
 				try {
-					tasks.wait(); // TODO pendingKey
+					pendingKey.wait();
 				} catch (InterruptedException e) {
 					// Handle interruption if necessary
 					log.error("Work queue interrupted while waiting for tasks to finish.");
@@ -222,12 +210,10 @@ public class WorkQueue {
 						while (tasks.isEmpty() && !shutdown) {
 							tasks.wait();
 						}
-						if (tasks.size() > 0) { // TODO Remove if
-							task = tasks.removeFirst();
-							log.debug("Running Task {}", tasks.size());
-						} else { // TODO Remove
-							continue;
-						}
+
+						task = tasks.removeFirst();
+						log.debug("Running Task {}", tasks.size());
+
 					}
 
 					try {
@@ -237,9 +223,7 @@ public class WorkQueue {
 					} finally {
 						synchronized (pendingKey) {
 							if (--pending == 0) {
-								synchronized (tasks) { // TODO Remove
-									tasks.notifyAll(); // TODO pendingKey.notifyAll()
-								}
+								pendingKey.notifyAll();
 							}
 						}
 					}
