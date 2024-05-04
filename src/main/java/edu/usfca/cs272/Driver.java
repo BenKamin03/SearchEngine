@@ -97,6 +97,20 @@ public class Driver {
 			}
 		}
 
+		if (parser.hasFlag("-html")) {
+			if (workQueue == null) {
+				workQueue = new WorkQueue();
+			}
+
+			WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
+			try {
+				webCrawler.addURI(new URI(parser.getString("-html")));
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 		if (parser.hasFlag("-query")) {
 			Path queryPath = parser.getPath("-query");
 
@@ -109,20 +123,6 @@ public class Driver {
 				System.out.println("The -query flag is missing a necessary path value.");
 			} catch (IOException io) {
 				System.out.println("IO Error with -query flag");
-			}
-		}
-
-		if (parser.hasFlag("-html")) {
-			if (workQueue == null) {
-				workQueue = new WorkQueue();
-			}
-
-			WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
-			try {
-				webCrawler.addURI(new URI(parser.getString("-html")));
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		
