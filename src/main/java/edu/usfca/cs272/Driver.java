@@ -97,7 +97,7 @@ public class Driver {
 			}
 		}
 
-		if (parser.hasFlag("-html")) {
+		if (parser.hasValue("-html")) {
 			if (workQueue == null) {
 				workQueue = new WorkQueue();
 			}

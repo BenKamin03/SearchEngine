@@ -142,7 +142,7 @@ public class HtmlFetcher {
 				}
 			}
 
-			if (isHtml(headers)) {
+			if (isHtml(headers) && getStatusCode(headers) == 200) {
 				response.lines().forEach(line -> htmlBuilder.append(line).append(System.lineSeparator()));
 			}
 		} catch (IOException | URISyntaxException e) {

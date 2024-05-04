@@ -29,11 +29,13 @@ public class WebCrawler {
 
      public void addURI(URI uri) {
           String html = HtmlFetcher.fetch(uri, 3);
-          String[] parsedLine = FileStemmer.parse(HtmlCleaner.stripHtml(html));
-          int i = 1;
-          System.out.println("URI: " + getFileName(uri));
-          for (String word : parsedLine) {
-               invertedIndex.addIndex(stemmer.stem(word).toString(), getFileName(uri), i++);
+          if (html != null) {
+               String[] parsedLine = FileStemmer.parse(HtmlCleaner.stripHtml(html));
+               int i = 1;
+               System.out.println("URI: " + getFileName(uri));
+               for (String word : parsedLine) {
+                    invertedIndex.addIndex(stemmer.stem(word).toString(), getFileName(uri), i++);
+               }
           }
      }
 
