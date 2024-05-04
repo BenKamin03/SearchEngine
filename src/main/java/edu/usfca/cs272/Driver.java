@@ -2,6 +2,8 @@ package edu.usfca.cs272;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,6 +17,7 @@ import edu.usfca.cs272.utils.MultiThreadedInvertedIndex;
 import edu.usfca.cs272.utils.MultiThreadedQueryHandler;
 import edu.usfca.cs272.utils.QueryHandler;
 import edu.usfca.cs272.utils.QueryHandlerInterface;
+import edu.usfca.cs272.utils.WebCrawler;
 import edu.usfca.cs272.utils.WorkQueue;
 
 /**
@@ -114,7 +117,13 @@ public class Driver {
 				workQueue = new WorkQueue();
 			}
 
-			//Do Crawl
+			WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
+			try {
+				webCrawler.addURI(new URI(parser.getString("-html")));
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		if (workQueue != null) {
