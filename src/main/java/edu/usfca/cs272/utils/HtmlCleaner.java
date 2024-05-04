@@ -1,5 +1,7 @@
 package edu.usfca.cs272.utils;
 
+import java.net.URI;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +27,6 @@ import org.apache.commons.text.StringEscapeUtils;
  */
 public class HtmlCleaner {
 
-	
 	/**
 	 * Replaces all HTML tags with an empty string. For example, the html
 	 * {@code A<b>B</b>C} will become {@code ABC}.
@@ -40,6 +41,40 @@ public class HtmlCleaner {
 	 */
 	public static String stripTags(String html) {
 		return html.replaceAll("<[^<>]*?>", "");
+	}
+
+	public static TreeSet<URI> getURIsFromFile(String html, URI baseUri) {
+		String hrefPattern = "(?i)(?s)<\\s?a.+?href=[\"'](.+?)[\"'].*?>";
+
+		Pattern pattern = Pattern.compile(hrefPattern);
+
+		Matcher matcher = pattern.matcher(html);
+
+		TreeSet<URI> hrefs = new TreeSet<>();
+
+		while (matcher.find()) {
+			String currHref = matcher.group(1);
+			hrefs.add(makeFullLink(baseUri, currHref));
+		}
+
+		return hrefs;
+	}
+
+	public static URI makeFullLink(URI baseUri, String href) {
+		URI uri;
+		try {
+			uri = new URI(href);
+			if (uri.isAbsolute()) {
+				return uri;
+			}
+		} catch (Exception e) {
+			// Handle invalid URIs
+			e.printStackTrace();
+			return null;
+		}
+
+		URI resolved = baseUri.resolve(uri);
+		return resolved;
 	}
 
 	/**
@@ -82,7 +117,6 @@ public class HtmlCleaner {
 				replacement = "";
 			}
 			matcher.appendReplacement(result, replacement);
-			System.out.println(replacement);
 		}
 
 		// Append remaining text after the last match
@@ -181,45 +215,5 @@ public class HtmlCleaner {
 		html = stripTags(html);
 		html = stripEntities(html);
 		return html;
-	}
-
-	/**
-	 * Demonstrates this class.
-	 *
-	 * @param args unused
-	 */
-	public static void main(String[] args) {
-		String html = """
-				<!doctype html>
-				<html lang="en">
-				<head>
-					<meta charset="utf-8">
-					<title>Hello, world!</title>
-				</head>
-				<body>
-					<style>
-						body {
-							font-size: 12pt;
-						}
-					</style>
-
-					<p>Hello, <strong>world</strong>!</p>
-					<p>&copy; 2023</p>
-				</body>
-				</html>
-				""";
-
-		/*
-		 * The output should eventually look like:
-		 *
-		 * Hello, world!
-		 * © 2023
-		 */
-
-		System.out.println("---------------------");
-		System.out.println(html);
-		System.out.println("---------------------");
-		System.out.println(stripHtml(html));
-		System.out.println("---------------------");
 	}
 }

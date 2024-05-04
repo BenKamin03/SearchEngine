@@ -97,17 +97,20 @@ public class Driver {
 			}
 		}
 
-		if (parser.hasValue("-html")) {
-			if (workQueue == null) {
-				workQueue = new WorkQueue();
-			}
+		if (parser.hasFlag("-html")) {
+			if (parser.hasValue("-html")) {
+				if (workQueue == null) {
+					workQueue = new WorkQueue();
+				}
 
-			WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
-			try {
-				webCrawler.addURI(new URI(parser.getString("-html")));
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
+				try {
+					webCrawler.crawl(new URI(parser.getString("-html")));
+				} catch (URISyntaxException e) {
+					System.out.println("Error with URI syntax in '-html' tag");
+				}
+			} else {
+				System.out.println("Missing value for '-html' tag");
 			}
 		}
 

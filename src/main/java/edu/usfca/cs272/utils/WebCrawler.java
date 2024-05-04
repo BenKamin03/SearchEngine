@@ -27,19 +27,42 @@ public class WebCrawler {
           this.stemmer = stemmer;
      }
 
+     public void crawl(URI seed) {
+          addURI(seed);
+          workQueue.finish();
+     }
+
      public void addURI(URI uri) {
-          String html = HtmlFetcher.fetch(uri, 3);
-          if (html != null) {
-               String[] parsedLine = FileStemmer.parse(HtmlCleaner.stripHtml(html));
-               int i = 1;
-               System.out.println("URI: " + getFileName(uri));
-               for (String word : parsedLine) {
-                    invertedIndex.addIndex(stemmer.stem(word).toString(), getFileName(uri), i++);
-               }
-          }
+          workQueue.execute(new WebCrawlerTask(uri));
      }
 
      public String getFileName(URI uri) {
-          return uri.toString().split("#", 2)[0];
+          return uri.getScheme() + "://" + uri.getAuthority() + uri.getPath();
+     }
+
+     public class WebCrawlerTask implements Runnable {
+
+          private final URI uri;
+
+          public WebCrawlerTask(URI uri) {
+               this.uri = uri;
+          }
+
+          @Override
+          public void run() {
+               String html = HtmlFetcher.fetch(uri, 3);
+               InvertedIndex localIndex = new InvertedIndex();
+               if (html != null) {
+                    String[] parsedLine = FileStemmer.parse(HtmlCleaner.stripHtml(html));
+                    int i = 1;
+                    System.out.println("URI: " + getFileName(uri));
+                    for (String word : parsedLine) {
+                         localIndex.addIndex(stemmer.stem(word).toString(), getFileName(uri), i++);
+                    }
+
+                    invertedIndex.addIndex(localIndex);
+               }
+          }
+
      }
 }

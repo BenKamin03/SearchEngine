@@ -325,7 +325,7 @@ public class InvertedIndex {
       * @return whether or not there is a file in the counts map for the given file
       *         or not
       */
-     public boolean hasCounts(String file) {
+     public boolean containsFile(String file) {
           return counts.containsKey(file);
      }
 

@@ -275,10 +275,10 @@ public class MultiThreadedInvertedIndex extends InvertedIndex {
       *         or not
       */
      @Override
-     public boolean hasCounts(String file) {
+     public boolean containsFile(String file) {
           countsLock.readLock().lock();
           try {
-               return super.hasCounts(file);
+               return super.containsFile(file);
           } finally {
                countsLock.readLock().unlock();
           }
