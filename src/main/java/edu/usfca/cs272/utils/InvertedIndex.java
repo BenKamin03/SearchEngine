@@ -339,6 +339,10 @@ public class InvertedIndex {
           return getCounts().keySet();
      }
 
+     public int getNumLocations() {
+          return getLocations().size();
+     }
+
      /**
       * writes the counts to a file
       * 

@@ -106,6 +106,7 @@ public class Driver {
 				WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
 				try {
 					webCrawler.crawl(new URI(parser.getString("-html")));
+					System.out.println("Finished Crawling");
 				} catch (URISyntaxException e) {
 					System.out.println("Error with URI syntax in '-html' tag");
 				}
