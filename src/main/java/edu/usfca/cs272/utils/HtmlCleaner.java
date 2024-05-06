@@ -4,6 +4,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,10 +50,9 @@ public class HtmlCleaner {
 		return html.replaceAll("<[^<>]*?>", "");
 	}
 
-	public static ArrayList<URI> getURIsFromFile(String html, URI baseUri) {
+	public static List<URI> getURIsFromFile(String html, URI baseUri) {
 
-		html = stripComments(html);
-		html = stripElement(html, "head");
+		html = stripBlockElements(stripComments(html));
 
 		String hrefPattern = "(?i)(?s)<\\s?a.+?href=[\"'](.+?)[\"'].*?>";
 
@@ -57,7 +60,7 @@ public class HtmlCleaner {
 
 		Matcher matcher = pattern.matcher(html);
 
-		ArrayList<URI> hrefs = new ArrayList<>();
+		List<URI> hrefs = new LinkedList<>();
 
 		while (matcher.find()) {
 			String currHref = matcher.group(1);
