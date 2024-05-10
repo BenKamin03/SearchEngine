@@ -9,6 +9,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.core.util.Assert;
+
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
@@ -66,10 +68,13 @@ public class Driver {
 		QueryHandlerInterface queryHandler;
 		FileHandler fileHandler;
 		WorkQueue workQueue;
-		
-		int threads = getThreads(parser);
 
-		if (threads > 1) {
+		if (parser.hasFlag("-threads") || parser.hasFlag("-html")) {
+			int threads = parser.getInteger("-threads", 5);
+			if (threads < 1) {
+				threads = 5;
+			}
+
 			workQueue = new WorkQueue(threads);
 
 			invertedIndex = new MultiThreadedInvertedIndex();
@@ -101,11 +106,14 @@ public class Driver {
 			if (parser.hasValue("-html")) {
 				if (workQueue == null) {
 					workQueue = new WorkQueue();
+
 				}
 
-				WebCrawler webCrawler = new WebCrawler(invertedIndex, workQueue);
+				WebCrawler webCrawler = new WebCrawler((MultiThreadedInvertedIndex)invertedIndex, workQueue);
 				try {
-					webCrawler.crawl(new URI(parser.getString("-html")), parser.getInteger("-crawl", 1));
+					URI uri = new URI(parser.getString("-html"));
+					webCrawler.crawl(new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null),
+							parser.getInteger("-crawl", 1));
 					System.out.println("Finished Crawling");
 				} catch (URISyntaxException e) {
 					System.out.println("Error with URI syntax in '-html' tag");
@@ -129,7 +137,7 @@ public class Driver {
 				System.out.println("IO Error with -query flag");
 			}
 		}
-		
+
 		if (workQueue != null) {
 			workQueue.shutdown();
 		}

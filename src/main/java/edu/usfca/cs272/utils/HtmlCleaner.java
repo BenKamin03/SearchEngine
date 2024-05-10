@@ -52,7 +52,7 @@ public class HtmlCleaner {
 
 	public static List<URI> getURIsFromFile(String html, URI baseUri) {
 
-		html = stripBlockElements(stripComments(html));
+		html = stripBlockElements(html);
 
 		String hrefPattern = "(?i)(?s)<\\s?a.+?href=[\"'](.+?)[\"'].*?>";
 
@@ -64,35 +64,24 @@ public class HtmlCleaner {
 
 		while (matcher.find()) {
 			String currHref = matcher.group(1);
-			URI newURI;
+			URI uri;
 			try {
-				newURI = new URI(currHref);
-				if (!newURI.isAbsolute() && !hrefs.contains(newURI)) {
-					hrefs.add(baseUri.resolve(newURI));
-				}
+				uri = baseUri.resolve(new URI(currHref));
+
+				// newURI = new URI(newURI.getScheme() + "://" + newURI.getAuthority() +
+				// newURI.getPath());
+
+				URI cleanedURI = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
+
+				if (!hrefs.contains(cleanedURI))
+					hrefs.add(cleanedURI);
+
 			} catch (URISyntaxException e) {
 				System.out.println("URISyntax Issue in Crawler: " + currHref + " in " + baseUri.toString());
 			}
 		}
 
 		return hrefs;
-	}
-
-	public static URI makeFullLink(URI baseUri, String href) {
-		URI uri;
-		try {
-			uri = new URI(href);
-			if (uri.isAbsolute()) {
-				return null;
-			}
-		} catch (Exception e) {
-			// Handle invalid URIs
-			e.printStackTrace();
-			return null;
-		}
-
-		URI resolved = baseUri.resolve(uri);
-		return resolved;
 	}
 
 	/**
@@ -134,10 +123,7 @@ public class HtmlCleaner {
 			if (replacement.equals(matcher.group())) {
 				replacement = "";
 			}
-			try {
-				matcher.appendReplacement(result, replacement);
-			} catch (Exception e) {
-			}
+			matcher.appendReplacement(result, replacement);
 		}
 
 		// Append remaining text after the last match
@@ -199,6 +185,7 @@ public class HtmlCleaner {
 	 * @see String#replaceAll(String, String)
 	 */
 	public static String stripElement(String html, String name) {
+
 		return html.replaceAll("(?i)(?s)(<\\b[^<>]*" + name + "\\b[^<>]*>)(.+?)(<\\/\\b[^<>]*" + name + "\\b[^<>]*>)",
 				"");
 	}
