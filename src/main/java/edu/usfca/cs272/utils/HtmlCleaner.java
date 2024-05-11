@@ -185,8 +185,7 @@ public class HtmlCleaner {
 	 * @see String#replaceAll(String, String)
 	 */
 	public static String stripElement(String html, String name) {
-
-		return html.replaceAll("(?i)(?s)(<\\b[^<>]*" + name + "\\b[^<>]*>)(.+?)(<\\/\\b[^<>]*" + name + "\\b[^<>]*>)",
+		return html.replaceAll("(?i)(?s)<\\s*" + name + "[^>]*>.*?</" + name + ">",
 				"");
 	}
 
