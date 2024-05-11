@@ -9,8 +9,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
-import org.apache.logging.log4j.core.util.Assert;
-
 import edu.usfca.cs272.utils.ArgumentParser;
 import edu.usfca.cs272.utils.FileHandler;
 import edu.usfca.cs272.utils.InvertedIndex;
@@ -177,21 +175,5 @@ public class Driver {
 				System.out.println("IO Error with -results flag");
 			}
 		}
-	}
-
-	/**
-	 * Used to get the value of the -threads tag
-	 * 
-	 * @param parser the parser
-	 * @return the number of threads to use
-	 */
-	private static int getThreads(ArgumentParser parser) {
-		if (!parser.hasFlag("-threads"))
-			return 1;
-		int threads = parser.getInteger("-threads");
-		if (threads > 5 || threads < 1) {
-			return 5;
-		}
-		return threads;
 	}
 }
