@@ -72,10 +72,6 @@ public class WorkQueue {
 		}
 	}
 
-	public int getThreads() {
-		return workers.length;
-	}
-
 	/**
 	 * Gets the number of active workers
 	 * 

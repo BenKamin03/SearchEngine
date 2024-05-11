@@ -104,15 +104,11 @@ public class Driver {
 			if (parser.hasValue("-html")) {
 				if (workQueue == null) {
 					workQueue = new WorkQueue();
-
 				}
 
 				WebCrawler webCrawler = new WebCrawler((MultiThreadedInvertedIndex)invertedIndex, workQueue);
 				try {
-					URI uri = new URI(parser.getString("-html"));
-					webCrawler.crawl(new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null),
-							parser.getInteger("-crawl", 1));
-					System.out.println("Finished Crawling");
+					webCrawler.crawl(new URI(parser.getString("-html")), parser.getInteger("-crawl", 1));
 				} catch (URISyntaxException e) {
 					System.out.println("Error with URI syntax in '-html' tag");
 				}

@@ -45,9 +45,15 @@ public class HtmlCleaner {
 		return html.replaceAll("<[^<>]*?>", "");
 	}
 
+	/**
+	 * gets the URIs from an HTML file without any blocks and the uri where the html
+	 * was taken frmo
+	 * 
+	 * @param html the html stripped of block elements
+	 * @param baseUri the base url
+	 * @return List<URI>
+	 */
 	public static List<URI> getURIsFromFile(String html, URI baseUri) {
-
-		html = stripBlockElements(html);
 
 		String hrefPattern = "(?i)(?s)<\\s?a.+?href=[\"'](.+?)[\"'].*?>";
 
@@ -59,24 +65,34 @@ public class HtmlCleaner {
 
 		while (matcher.find()) {
 			String currHref = matcher.group(1);
-			URI uri;
+			URI uri = baseUri.resolve(currHref);
+
 			try {
-				uri = baseUri.resolve(new URI(currHref));
-
-				// newURI = new URI(newURI.getScheme() + "://" + newURI.getAuthority() +
-				// newURI.getPath());
-
-				URI cleanedURI = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
-
-				if (!hrefs.contains(cleanedURI))
-					hrefs.add(cleanedURI);
-
+				uri = cleanURI(uri);
 			} catch (URISyntaxException e) {
-				System.out.println("URISyntax Issue in Crawler: " + currHref + " in " + baseUri.toString());
+				System.out.println("URISyntaxException: Finding Links in " + baseUri + ": " + uri);
 			}
+
+			if (!hrefs.contains(uri))
+				hrefs.add(uri);
+
 		}
 
 		return hrefs;
+	}
+
+	/**
+	 * Cleans the URI of a fragment
+	 * 
+	 * @param uri the original URI
+	 * @return URI the cleaned URI
+	 * @throws URISyntaxException if a URISyntaxException occurs
+	 */
+	public static URI cleanURI(URI uri) throws URISyntaxException {
+		if (uri.getFragment() != null) {
+			return new URI(uri.getScheme(), uri.getSchemeSpecificPart(), null);
+		}
+		return uri;
 	}
 
 	/**

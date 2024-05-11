@@ -87,7 +87,7 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
       */
      @Override
      public void handleQueries(String line, SnowballStemmer stemmer) {
-          workQueue.execute(new QueryTask(line, stemmer));
+          workQueue.execute(new QueryTask(line));
      }
 
      /**
@@ -186,8 +186,6 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
            */
           private String line;
 
-          private Stemmer stemmer;
-
           /**
            * The constructor
            * 
@@ -195,17 +193,12 @@ public class MultiThreadedQueryHandler implements QueryHandlerInterface {
            */
           public QueryTask(String line) {
                this.line = line;
-               stemmer = new SnowballStemmer(ENGLISH);
           }
 
-          public QueryTask(String line, Stemmer stemmer) {
-               this.line = line;
-               this.stemmer = stemmer;
-          }
 
           @Override
           public void run() {
-               final Set<String> val = FileStemmer.uniqueStems(line, stemmer);
+               final Set<String> val = FileStemmer.uniqueStems(line, new SnowballStemmer(ENGLISH));
                final String key = QueryHandlerInterface.getSearchFromWords(val);
 
                if (key.length() > 0) {
