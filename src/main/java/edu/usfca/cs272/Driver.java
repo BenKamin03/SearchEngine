@@ -18,6 +18,7 @@ import edu.usfca.cs272.utils.MultiThreadedQueryHandler;
 import edu.usfca.cs272.utils.QueryHandler;
 import edu.usfca.cs272.utils.QueryHandlerInterface;
 import edu.usfca.cs272.utils.WebCrawler;
+import edu.usfca.cs272.utils.WebServer;
 import edu.usfca.cs272.utils.WorkQueue;
 
 /**
@@ -134,6 +135,17 @@ public class Driver {
 
 		if (workQueue != null) {
 			workQueue.shutdown();
+		}
+
+		if (parser.hasFlag("-server")) {
+			int port = parser.getInteger("-server", 8080);
+
+			WebServer webServer = new WebServer(port, queryHandler);
+			try {
+				webServer.start();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		if (parser.hasFlag("-counts")) {
