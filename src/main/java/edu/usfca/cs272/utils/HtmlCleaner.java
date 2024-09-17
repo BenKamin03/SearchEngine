@@ -234,4 +234,14 @@ public class HtmlCleaner {
 		html = stripEntities(html);
 		return html;
 	}
+
+	public static String getFaviconRef(String html) {
+		String regex = "<link[^>]*rel=['\"]icon['\"][^>]*href=['\"]([^'\"]+)['\"][^>]*>";
+		Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(html);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+	}
 }

@@ -9,7 +9,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -55,19 +57,29 @@ public class WebServer {
 
     /**
      * Starts the server
-     * 
+     *
      * @throws Exception if an exception occurs when starting the server
      */
     public void start() throws Exception {
+        // Initialize the server on the specified port
         server = new Server(port);
 
+        // Create a ServletContextHandler to manage servlets and sessions
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
-        server.setHandler(context);
 
+        // Add the ApiServlet and map it to the /api/* path
+        context.addServlet(new ServletHolder(new ApiServlet()), "/api/search");
+
+        // Add another servlet to handle general webpage requests (e.g., index.html)
         context.addServlet(new ServletHolder(new WebPageServlet()), "/");
 
+        // Set the handler to manage the context
+        server.setHandler(context);
+
+        // Start the server
         server.start();
+        server.join(); // Keeps the server running
     }
 
     /**
@@ -118,6 +130,24 @@ public class WebServer {
         return null;
     }
 
+    private class ApiServlet extends HttpServlet {
+        @Override
+        public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+            response.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins
+
+            response.setContentType("text/json");
+            PrintWriter out = response.getWriter();
+            String query = getParameterValue(request, "query");
+            System.out.println("API Request: " + query);
+            if (query != null) {
+                System.out.print(queryHandler.getQueryResults(query).toString());
+                JsonWriter.toJsonString(queryHandler.getQueryResults(query), out);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No query provided");
+            }
+        }
+    }
+
     /**
      * The Servlet for the search page
      */
@@ -130,7 +160,9 @@ public class WebServer {
         }
 
         /**
-         * Creates the page from the content (appends the header and closing tags to the list)
+         * Creates the page from the content (appends the header and closing tags to the
+         * list)
+         * 
          * @param content the list of content
          * @return the html string
          */

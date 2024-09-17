@@ -804,6 +804,28 @@ public class JsonWriter {
 		return sb.toString();
 	}
 
+	public static String toJsonString(Collection<QueryEntry> list, Writer writer) {
+		try {
+			writer.write("[");
+			boolean first = true;
+			if (list.size() != 0) {
+				writer.write("{");
+			}
+			for (QueryEntry entry : list) {
+				if (!first) {
+					writer.write(", {");
+				}
+				entry.toJSON(writer, 0);
+				writer.write("}");
+				first = false;
+			}
+			writer.write("]");
+			return writer.toString();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
 	/** Prevent instantiating this class of static methods. */
 	private JsonWriter() {
 	}

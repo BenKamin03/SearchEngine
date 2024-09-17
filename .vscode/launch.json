@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Driver",
+            "request": "launch",
+            "mainClass": "edu.usfca.cs272.Driver",
+            "projectName": "SearchEngine"
+        },
+        {
+            "type": "java",
+            "name": "LinkFinder",
+            "request": "launch",
+            "mainClass": "edu.usfca.cs272.utils.LinkFinder",
+            "projectName": "SearchEngine"
+        },
+        {
+            "type": "java",
+            "name": "Server",
+            "request": "launch",
+            "mainClass": "edu.usfca.cs272.Driver",
+            "projectName": "SearchEngine",
+            "args": "-html https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html -crawl 50 -threads 3 -server 3000"
+        }
+    ]
+}
