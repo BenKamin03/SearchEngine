@@ -3,21 +3,18 @@ package edu.usfca.cs272.utils;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-
-import edu.usfca.cs272.utils.InvertedIndex.QueryEntry;
 
 /**
  * Class responsible for creating the webserver and displaying the HTML to the
@@ -61,25 +58,19 @@ public class WebServer {
      * @throws Exception if an exception occurs when starting the server
      */
     public void start() throws Exception {
-        // Initialize the server on the specified port
         server = new Server(port);
-
-        // Create a ServletContextHandler to manage servlets and sessions
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
-        // Add the ApiServlet and map it to the /api/* path
+        // Add the ApiServlet to handle API requests
         context.addServlet(new ServletHolder(new ApiServlet()), "/api/search");
 
-        // Add another servlet to handle general webpage requests (e.g., index.html)
-        context.addServlet(new ServletHolder(new WebPageServlet()), "/");
+        // Add the StaticFileServlet to handle all other requests
+        context.addServlet(new ServletHolder(new WebPageServlet("frontend/build")), "/*");
 
-        // Set the handler to manage the context
         server.setHandler(context);
-
-        // Start the server
         server.start();
-        server.join(); // Keeps the server running
+        server.join();
     }
 
     /**
@@ -130,17 +121,18 @@ public class WebServer {
         return null;
     }
 
+    /**
+     * The Servlet for the API
+     */
     private class ApiServlet extends HttpServlet {
         @Override
         public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-            response.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins
-
+            response.setHeader("Access-Control-Allow-Origin", "*");
             response.setContentType("text/json");
             PrintWriter out = response.getWriter();
             String query = getParameterValue(request, "query");
             System.out.println("API Request: " + query);
             if (query != null) {
-                System.out.print(queryHandler.getQueryResults(query).toString());
                 JsonWriter.toJsonString(queryHandler.getQueryResults(query), out);
             } else {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No query provided");
@@ -152,85 +144,33 @@ public class WebServer {
      * The Servlet for the search page
      */
     private class WebPageServlet extends HttpServlet {
+        private final String buildDirectory;
+
+        public WebPageServlet(String buildDirectory) {
+            this.buildDirectory = buildDirectory;
+        }
+
         @Override
-        public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-            response.setContentType("text/html");
-            PrintWriter out = response.getWriter();
-            out.println(createPage(request));
-        }
-
-        /**
-         * Creates the page from the content (appends the header and closing tags to the
-         * list)
-         * 
-         * @param content the list of content
-         * @return the html string
-         */
-        private String createPage(List<String> content) {
-            StringBuilder htmlBuilder = new StringBuilder();
-            htmlBuilder.append("<html><head><title>Simple Servlet</title></head><body>");
-
-            var iterator = content.iterator();
-            while (iterator.hasNext()) {
-                htmlBuilder.append(iterator.next());
-                htmlBuilder.append("\n");
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            System.out.println("GET request: " + req.getRequestURI());
+            String path = req.getRequestURI();
+            if (path.equals("/") || path.equals("")) {
+                path = "/index.html";
             }
-
-            htmlBuilder.append("</body></html>");
-
-            return htmlBuilder.toString();
-        }
-
-        /**
-         * creates the main content of the html page
-         * 
-         * @param request the request
-         * @return the main content of the html page
-         */
-        private String createPage(HttpServletRequest request) {
-            List<String> content = new ArrayList<>();
-            content.add("<h1 style='text-align: center;'>Search Engine</h1>");
-            String queryLine = getParameterValue(request, "search");
-            content.add(createForm(queryLine));
-            if (queryLine != null) {
-                List<QueryEntry> queryEntries = queryHandler.getQueryResults(queryLine);
-                if (queryEntries.size() > 0)
-                    queryEntries.forEach((QueryEntry result) -> content.add(formatQueryResult(result)));
-                else
-                    content.add("<p style='text-align: center;'>Sorry, no results found</p>");
+            File file = new File(buildDirectory, path);
+            if (file.exists() && !file.isDirectory()) {
+                resp.setContentType(getServletContext().getMimeType(file.getName()));
+                Files.copy(file.toPath(), resp.getOutputStream());
+            } else {
+                // Serve index.html for any other paths to support client-side routing
+                File fallbackFile = new File(buildDirectory, "/index.html");
+                if (fallbackFile.exists()) {
+                    resp.setContentType(getServletContext().getMimeType(fallbackFile.getName()));
+                    Files.copy(fallbackFile.toPath(), resp.getOutputStream());
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }
             }
-
-            return createPage(content);
-        }
-
-        private String formatQueryResult(QueryEntry entry) {
-            StringBuilder builder = new StringBuilder();
-
-            builder.append(
-                    "<fieldset style='border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px;'>");
-            builder.append("<legend style='font-weight: bold;'>Score: " + round(entry.getScore(), 3) + "\tCount: "
-                    + entry.getTotalWords() + "</legend>");
-            builder.append("<a href='" + entry.getFile() + "' style='text-decoration: none; color: #007bff;'>"
-                    + entry.getFile() + "</a>");
-            builder.append("</fieldset>");
-
-            return builder.toString();
-        }
-
-        private String createForm(String query) {
-            query = (query != null ? query : "");
-            StringBuilder builder = new StringBuilder();
-
-            builder.append("<form method='get' action='/' style='text-align: center;'>");
-            builder.append("<input required type='text' id='search' name='search' placeholder='Search' value='"
-                    + query + "' style='padding: 5px; width: 300px; border-radius: 5px;'>");
-            builder.append(
-                    "<input type='submit' value='Submit' style='padding: 5px; background-color: #007bff; color: white; border: 1px solid #007bff; border-radius: 5px; cursor: pointer;'>");
-            builder.append("</form>");
-            builder.append("<hr>");
-            builder.append("<h3 style='text-align: center;'>Showing Results for: " + query + "</h3>");
-
-            return builder.toString();
         }
 
         public static String round(double value, int places) {

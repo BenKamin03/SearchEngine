@@ -43,7 +43,12 @@ const Navbar = ({ selectedTheme, toggleTheme, defaultSearchValue }) => {
             <AppBar
                 position="sticky"
                 elevation={1}
-                sx={{ backgroundColor: theme.palette.background.default, boxShadow: `0px 1px 3px ${selectedTheme == 'light' ? "#0000003f" : '#ffffff3f' }` }}
+                sx={{
+                    backgroundColor: theme.palette.background.default,
+                    boxShadow: `0px 1px 3px ${
+                        selectedTheme == "light" ? "#0000003f" : "#ffffff3f"
+                    }`,
+                }}
             >
                 <Toolbar className="md:space-x-16 space-x-4 relative flex w-full justify-between">
                     <div className="md:space-x-16 space-x-4 flex w-full justify-start items-center">
