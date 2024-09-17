@@ -6,7 +6,7 @@ My search engine is a powerful full-stack application designed to provide accura
 
 ### Web Crawling
 
-My system uses a web crawler to gather information from a wide array of web pages. While the crawler is not continuously updated, it performs periodic crawls to ensure the data remains relevant and representative of the web's content.
+My system uses a web crawler to gather information from the Javadoc website.
 
 ### Inverted Index with Stemming
 
