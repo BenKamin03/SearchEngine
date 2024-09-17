@@ -9,9 +9,6 @@ import java.nio.file.Files;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -171,14 +168,6 @@ public class WebServer {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
             }
-        }
-
-        public static String round(double value, int places) {
-            if (places < 0)
-                throw new IllegalArgumentException();
-
-            DecimalFormat df = new DecimalFormat("#." + "0".repeat(places));
-            return df.format(value);
         }
     }
 }
