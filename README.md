@@ -18,14 +18,22 @@ When you perform a search, my engine calculates the relevance of each document b
 
 ## Instructions for Running
 
-1. **Create a `.env` file in the `/frontend` directory with the following content:**
+1. **Install and Build the Front End**
+
+   ```
+   cd frontend
+   npm i --force
+   npm run build
+   ```
+
+3. **Create a `.env` file in the `/frontend` directory with the following content:**
 
     ```env
     REACT_APP_PORT=3000
     REACT_APP_API_URL=http://localhost
     ```
-
-2. **Run the following command to start the system:**
+   
+4. **Run the following command to start the system:**
 
     ```bash
     -html https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html -crawl 50 -threads 3 -server 3000
