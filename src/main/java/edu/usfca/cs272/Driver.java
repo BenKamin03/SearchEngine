@@ -20,6 +20,7 @@ import edu.usfca.cs272.utils.QueryHandlerInterface;
 import edu.usfca.cs272.utils.WebCrawler;
 import edu.usfca.cs272.utils.WebServer;
 import edu.usfca.cs272.utils.WorkQueue;
+import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -107,7 +108,7 @@ public class Driver {
 					workQueue = new WorkQueue();
 				}
 
-				WebCrawler webCrawler = new WebCrawler((MultiThreadedInvertedIndex)invertedIndex, workQueue);
+				WebCrawler webCrawler = new WebCrawler((MultiThreadedInvertedIndex) invertedIndex, workQueue);
 				try {
 					webCrawler.crawl(new URI(parser.getString("-html")), parser.getInteger("-crawl", 1));
 				} catch (URISyntaxException e) {
@@ -138,7 +139,14 @@ public class Driver {
 		}
 
 		if (parser.hasFlag("-server")) {
-			int port = parser.getInteger("-server", 8080);
+
+			int port = 8080;
+
+			Dotenv dotenv = Dotenv.load();
+			String databaseUrl = dotenv.get("PORT");
+			if (databaseUrl != null) {
+				port = Integer.parseInt(databaseUrl);
+			}
 
 			WebServer webServer = new WebServer(port, queryHandler);
 			try {

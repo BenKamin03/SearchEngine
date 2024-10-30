@@ -27,4 +27,4 @@ RUN npm run build
 WORKDIR /app
 
 # Set the entry point to run the Java program
-ENTRYPOINT ["mvn", "exec:java", "-Dexec.mainClass=edu.usfca.cs272.Driver", "-Dexec.args=-html 'https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html' -crawl 50 -threads 3 -server 3000"]
+ENTRYPOINT ["mvn", "exec:java", "-Dexec.mainClass=edu.usfca.cs272.Driver", "-Dexec.args=-html 'https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html' -crawl 50 -threads 3 -server"]
