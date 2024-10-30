@@ -1,1 +1,1 @@
-web: npm --prefix frontend install && npm --prefix frontend run build && cp -r frontend/build/* target/classes/public && java -jar target/your-app.jar
+web: npm --prefix frontend install && npm --prefix frontend run build && cp -r frontend/build/* target/classes/public && java -jar target/your-app.jar -html https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html -crawl 50 -threads 3 -server $PORT
