@@ -20,7 +20,6 @@ import edu.usfca.cs272.utils.QueryHandlerInterface;
 import edu.usfca.cs272.utils.WebCrawler;
 import edu.usfca.cs272.utils.WebServer;
 import edu.usfca.cs272.utils.WorkQueue;
-import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -140,13 +139,7 @@ public class Driver {
 
 		if (parser.hasFlag("-server")) {
 
-			int port = 8080;
-
-			Dotenv dotenv = Dotenv.load();
-			String databaseUrl = dotenv.get("PORT");
-			if (databaseUrl != null) {
-				port = Integer.parseInt(databaseUrl);
-			}
+			int port = parser.getInteger("-server", 3000);
 
 			WebServer webServer = new WebServer(port, queryHandler);
 			try {

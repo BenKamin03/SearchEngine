@@ -30,7 +30,7 @@
             "request": "launch",
             "mainClass": "edu.usfca.cs272.Driver",
             "projectName": "SearchEngine",
-            "args": "-html https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html -crawl 50 -threads 3 -server 3000"
+            "args": "-html https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html -crawl 5000 -threads 3 -server 3000"
         }
     ]
 }

@@ -1,5 +1,5 @@
 module.exports = () => {
-    const URL = `${process.env.REACT_APP_API_URL}:${process.env.REACT_APP_PORT}`;
+    const URL = `${process.env.REACT_APP_API_URL}`;
 
     return {
         search: async (query) => {

@@ -21,10 +21,11 @@ COPY frontend /app/frontend
 RUN apt-get update && apt-get install -y nodejs npm
 WORKDIR /app/frontend
 RUN npm install
+ENV NODE_OPTIONS=--max_old_space_size=4096
 RUN npm run build
 
 # Set the working directory back to the backend
 WORKDIR /app
 
 # Set the entry point to run the Java program
-ENTRYPOINT ["mvn", "exec:java", "-Dexec.mainClass=edu.usfca.cs272.Driver", "-Dexec.args=-html 'https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html' -crawl 50 -threads 3 -server"]
+ENTRYPOINT ["mvn", "exec:java", "-Dexec.mainClass=edu.usfca.cs272.Driver", "-Dexec.args=-html 'https://usf-cs272-spring2024.github.io/project-web/docs/api/allclasses-index.html' -crawl 500 -threads 3 -server 80"]

@@ -58,6 +58,7 @@ public class WebServer {
         server = new Server(port);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
+        System.out.println("Starting server on port " + port);
 
         // Add the ApiServlet to handle API requests
         context.addServlet(new ServletHolder(new ApiServlet()), "/api/search");
